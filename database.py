@@ -1,5 +1,5 @@
 import sqlite3
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Creating the SQL Tables
 connection=sqlite3.connect("placement.db")
@@ -41,9 +41,11 @@ studentTable="""
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
+        age INTEGER NOT NULL,
+        gender TEXT CHECK(gender in ('Male','Female','Other')) NOT NULL,
         hashed_password TEXT NOT NULL,
         resume_path TEXT,
-        branch TEXT,
+        branch TEXT NOT NULL,
         cgpa REAL CHECK(cgpa BETWEEN 0 AND 10) DEFAULT 0,
         is_active INTEGER DEFAULT 1 NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -123,3 +125,58 @@ if not cursor.fetchone():
 
 connection.commit()
 connection.close()
+
+
+# Login % Register Logic
+
+# Checking admin,student or company by email and password
+def get_user_by_email(email,password):
+    con=sqlite3.connect("placement.db")
+    cursor=con.cursor()
+
+    # Check Admin
+    cursor.execute("SELECT id, hashed_password FROM admin WHERE email=?",(email,))
+    admin=cursor.fetchone()
+    if admin and check_password_hash(admin[1],password):
+        con.close()
+        return {"id":admin[0],"role":"admin"}
+    
+    # Check Student
+    cursor.execute("SELECT id, hashed_password FROM students WHERE email=?",(email,))
+    student=cursor.fetchone()
+    if student and check_password_hash(student[1],password):
+        con.close()
+        return {"id":student[0],"role":"student"}
+    
+    # Check Company
+    cursor.execute("SELECT id, hashed_password, approval_status FROM companies WHERE email=?",(email,))
+    company=cursor.fetchone()
+    if company:
+        if company[2]!="Approved":
+            con.close()
+            return {"error":"Company not approved yet"}
+        if check_password_hash(company[1],password):
+            con.close()
+            return {"id":company[0],"role":"company"}
+        con.close()
+        return None
+    con.close()
+    return None
+    
+# Creating Student
+def create_student(name,email,age,gender,password,branch,cgpa):
+    con=sqlite3.connect("placement.db")
+    cursor=con.cursor()
+    cursor.execute("INSERT INTO students(name,email,age,gender,hashed_password,branch,cgpa) VALUES(?,?,?,?,?,?,?)",
+                   (name,email,age,gender,generate_password_hash(password),branch,cgpa))
+    con.commit()
+    con.close()
+
+# Creating Company
+def create_company(name,email,password,contact,website):
+    con=sqlite3.connect("placement.db")
+    cursor=con.cursor()
+    cursor.execute("INSERT INTO companies(company_name,email,hashed_password,hr_contact,website) VALUES(?,?,?,?,?)",
+                   (name,email,generate_password_hash(password),contact,website))
+    con.commit()
+    con.close()

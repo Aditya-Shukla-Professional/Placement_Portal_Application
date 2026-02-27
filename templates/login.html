@@ -1,0 +1,8 @@
+<form method="POST">
+    <label for="email">Email address</label>
+    <input type="email", name="email" placeholder="you@email.com",required>
+    <label for="password">Password</label>
+    <input type="password" name="password" placeholder="**********" required>
+    <button type="submit">Log In</button>
+    <p>Don't have an account? <a href="{{url_for('student_register')}}">Register here</a></p>
+</form>

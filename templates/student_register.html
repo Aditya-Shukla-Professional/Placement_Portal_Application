@@ -1,0 +1,22 @@
+<h3>Create Account</h3>
+<form method="POST">
+    <label for="name">Full Name</label>
+    <input type="text" name="name" placeholder="You Full Name" required>
+    <label for="email">Email Address</label>
+    <input type="email" name="email" placeholder="you@example.com" required>
+    <label for="password">Password</label>
+    <input type="password" name="password" minlength="6" placeholder="Create a Password" required>
+    <label for="age">Age</label>
+    <input type="number" name="age" min="1" max="120" placeholder="Your age" required>
+    <label for="gender">Gender</label>
+    <select type="text" name="gender" required>
+        <option value="" disabled selected>Select your gender</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Other</option>
+    </select>
+    <label for="text">Branch</label>
+    <input type="text" name="branch" placeholder="Branch" required>
+    <label for="number">CGPA</label>
+    <input type="number" name="cgpa" placeholder="CGPA" step="0.01" min="0" max="10" required>
+</form>

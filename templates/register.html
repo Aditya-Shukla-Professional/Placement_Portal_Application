@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<h1>Choose how to register?</h1>
+<a href="{{ url_for('student_register') }}"><button>Student</button></a>
+<a href="{{ url_for('company_register') }}"><button>Company</button></a>
+{% endblock %}
