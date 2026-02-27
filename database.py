@@ -55,14 +55,15 @@ jobTable="""
     CREATE TABLE IF NOT EXISTS jobs(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         company_id INTEGER NOT NULL,
-        FOREIGN KEY (company_id) REFERENCES companies(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
         title TEXT NOT NULL,
         description TEXT NOT NULL,
         eligibility_criteria TEXT NOT NULL,
         deadline TEXT NOT NULL,
         status TEXT CHECK(status in ('Pending','Approved','Closed')) DEFAULT 'Pending' NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (company_id) REFERENCES companies(id)
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE
     )
 """
 
@@ -71,14 +72,16 @@ applicationTable="""
     CREATE TABLE IF NOT EXISTS applications(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         student_id INTEGER NOT NULL,
-        FOREIGN KEY (student_id) REFERENCES students(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
         job_id INTEGER NOT NULL,
-        FOREIGN KEY (job_id) REFERENCES jobs(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-        UNIQUE(student_id, job_id),
         applied_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        status TEXT CHECK(status in ('Applied','Shortlisted','Selected','Rejected')) DEFAULT 'Applied' NOT NULL
+        status TEXT CHECK(status in ('Applied','Shortlisted','Selected','Rejected')) DEFAULT 'Applied' NOT NULL,
+        UNIQUE(student_id, job_id),
+        FOREIGN KEY (student_id) REFERENCES students(id)
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
+        FOREIGN KEY (job_id) REFERENCES jobs(id)
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE
     )
 """
 
@@ -87,16 +90,19 @@ placementTable="""
     CREATE TABLE IF NOT EXISTS placements(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         student_id INTEGER NOT NULL,
-        FOREIGN KEY (student_id) REFERENCES students(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
         company_id INTEGER NOT NULL,
-        FOREIGN KEY (company_id) REFERENCES companies(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
         job_id INTEGER NOT NULL,
-        FOREIGN KEY (job_id) REFERENCES jobs(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
         salary_package REAL NOT NULL,
-        placement_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        placement_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (student_id) REFERENCES students(id)
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
+        FOREIGN KEY (company_id) REFERENCES companies(id)
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
+        FOREIGN KEY (job_id) REFERENCES jobs(id)
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE
     )
 """
 
