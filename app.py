@@ -387,7 +387,7 @@ def close_job(job_id):
     flash("Job closed successfully!")
     return redirect(url_for("company_manage_jobs"))
 
-app.route("/company/view_applications/<int:job_id>")
+@app.route("/company/view_applications/<int:job_id>")
 @login_required
 def view_applications(job_id):
     if current_user.role!="company":
@@ -396,7 +396,7 @@ def view_applications(job_id):
     con=sqlite3.connect("placement.db")
     cur=con.cursor()
     # Security Check: To make sure the job belong to this company
-    cur.execute("SELECT id FROM jobs WHERE id=? AND compaany_id=?",(job_id,current_user.actual_id))
+    cur.execute("SELECT id FROM jobs WHERE id=? AND company_id=?",(job_id,current_user.actual_id))
     job=cur.fetchone()
 
     if not job:
@@ -405,7 +405,7 @@ def view_applications(job_id):
        return redirect(url_for("company_manage_jobs"))
     
     cur.execute("""
-        SELECT applications.id, students.name, students.cgpa, students.resume_path, applications.status, application.applied_on
+        SELECT applications.id, students.name, students.cgpa, students.resume_path, applications.status, applications.applied_on
                 FROM applications JOIN students ON applications.student_id=students.id JOIN jobs ON applications.job_id=jobs.id
                 WHERE applications.job_id=? AND jobs.company_id=?
     """,(job_id, current_user.actual_id))
@@ -414,6 +414,85 @@ def view_applications(job_id):
     con.close()
 
     return render_template("company_view_applications.html",applications=applications,job_id=job_id)
+
+@app.route("/company/update_application_status/<int:application_id>/<string:new_status>", methods=["POST"])
+@login_required
+def update_application_status(application_id, new_status):
+    if current_user.role != "company":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+
+    # Allowed statuses
+    allowed_status = ["Shortlisted", "Selected", "Rejected"]
+
+    if new_status not in allowed_status:
+        flash("Invalid status update.")
+        return redirect(url_for("company_dashboard"))
+
+    con = sqlite3.connect("placement.db")
+    cur = con.cursor()
+
+    # SECURITY CHECK:
+    # Ensure this application belongs to a job of this company
+    cur.execute("""
+        SELECT applications.id
+        FROM applications
+        JOIN jobs ON applications.job_id = jobs.id
+        WHERE applications.id = ?
+        AND jobs.company_id = ?
+    """, (application_id, current_user.actual_id))
+
+    application = cur.fetchone()
+
+    if not application:
+        con.close()
+        flash("Unauthorized access.")
+        return redirect(url_for("company_dashboard"))
+
+    # Update status
+    cur.execute("""
+        UPDATE applications
+        SET status = ?
+        WHERE id = ?
+    """, (new_status, application_id))
+
+    con.commit()
+    con.close()
+
+    flash(f"Application marked as {new_status}.")
+    return redirect(request.referrer)
+
+@app.route("/company/shortlisted_candidates")
+@login_required
+def shortlisted_candidates():
+    if current_user.role != "company":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+
+    con = sqlite3.connect("placement.db")
+    cur = con.cursor()
+
+    cur.execute("""
+        SELECT students.id,
+               students.name,
+               students.cgpa,
+               students.resume_path,
+               jobs.title,
+               applications.applied_on
+        FROM applications
+        JOIN students ON applications.student_id = students.id
+        JOIN jobs ON applications.job_id = jobs.id
+        WHERE jobs.company_id = ?
+        AND applications.status = 'Shortlisted'
+    """, (current_user.actual_id,))
+
+    candidates = cur.fetchall()
+    con.close()
+
+    return render_template(
+        "company_shortlisted_candidates.html",
+        candidates=candidates
+    )
 
 @app.route("/logout")
 @login_required

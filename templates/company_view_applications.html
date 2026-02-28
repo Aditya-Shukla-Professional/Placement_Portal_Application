@@ -28,6 +28,7 @@
                         <th>Resume</th>
                         <th>Status</th>
                         <th>Applied On</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -36,6 +37,8 @@
                         <td>{{ app[0] }}</td>
                         <td>{{ app[1] }}</td>
                         <td>{{ app[2] }}</td>
+
+                        <!-- Resume -->
                         <td>
                             {% if app[3] %}
                                 <a href="{{ app[3] }}" target="_blank" class="btn btn-sm btn-primary">
@@ -45,6 +48,8 @@
                                 <span class="text-muted">Not Uploaded</span>
                             {% endif %}
                         </td>
+
+                        <!-- Status Badge -->
                         <td>
                             {% if app[4] == "Selected" %}
                                 <span class="badge bg-success">Selected</span>
@@ -56,7 +61,41 @@
                                 <span class="badge bg-warning text-dark">Applied</span>
                             {% endif %}
                         </td>
+
                         <td>{{ app[5] }}</td>
+
+                        <!-- Action Buttons -->
+                        <td>
+
+                            <!-- Shortlist -->
+                            <form action="{{ url_for('update_application_status', application_id=app[0], new_status='Shortlisted') }}"
+                                  method="POST" style="display:inline;">
+                                <button class="btn btn-sm btn-primary"
+                                        {% if app[4] == "Selected" or app[4] == "Rejected" %}disabled{% endif %}>
+                                    Shortlist
+                                </button>
+                            </form>
+
+                            <!-- Select -->
+                            <form action="{{ url_for('update_application_status', application_id=app[0], new_status='Selected') }}"
+                                  method="POST" style="display:inline;">
+                                <button class="btn btn-sm btn-success"
+                                        {% if app[4] == "Selected" or app[4] == "Rejected" %}disabled{% endif %}>
+                                    Select
+                                </button>
+                            </form>
+
+                            <!-- Reject -->
+                            <form action="{{ url_for('update_application_status', application_id=app[0], new_status='Rejected') }}"
+                                  method="POST" style="display:inline;">
+                                <button class="btn btn-sm btn-danger"
+                                        {% if app[4] == "Selected" or app[4] == "Rejected" %}disabled{% endif %}>
+                                    Reject
+                                </button>
+                            </form>
+
+                        </td>
+
                     </tr>
                     {% endfor %}
                 </tbody>
