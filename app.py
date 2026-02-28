@@ -9,6 +9,7 @@ app=Flask(__name__)
 
 app.secret_key = "dsjcn34y7r3fbf9218wdneuf#^%#&@()" # Secret key
 
+
 # Login Manager
 login_manager= LoginManager()
 login_manager.init_app(app)
@@ -358,6 +359,61 @@ def post_job():
         flash("Job Posted successfully waiting for admin approval.")
         return redirect(url_for("company_dashboard"))
     return render_template("post_job.html")
+
+@app.route("/company/manage_jobs")
+@login_required
+def company_manage_jobs():
+    if current_user.role!="company":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+    con=sqlite3.connect("placement.db")
+    cur=con.cursor()
+    cur.execute("SELECT id, title, deadline, status, created_at FROM jobs WHERE company_id=?",(current_user.actual_id,))
+    jobs=cur.fetchall()
+    con.close()
+    return render_template("company_manage_jobs.html",jobs=jobs)
+
+@app.route("/company/close_job/<int:job_id>",methods=["POST"])
+@login_required
+def close_job(job_id):
+    if current_user.role!="company":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+    con=sqlite3.connect("placement.db")
+    cur=con.cursor()
+    cur.execute("UPDATE jobs SET status='Closed' WHERE id=? AND company_id=?",(job_id,current_user.actual_id))
+    con.commit()
+    con.close()
+    flash("Job closed successfully!")
+    return redirect(url_for("company_manage_jobs"))
+
+app.route("/company/view_applications/<int:job_id>")
+@login_required
+def view_applications(job_id):
+    if current_user.role!="company":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+    con=sqlite3.connect("placement.db")
+    cur=con.cursor()
+    # Security Check: To make sure the job belong to this company
+    cur.execute("SELECT id FROM jobs WHERE id=? AND compaany_id=?",(job_id,current_user.actual_id))
+    job=cur.fetchone()
+
+    if not job:
+       con.close()
+       flash("Unauthorized access to this job.")
+       return redirect(url_for("company_manage_jobs"))
+    
+    cur.execute("""
+        SELECT applications.id, students.name, students.cgpa, students.resume_path, applications.status, application.applied_on
+                FROM applications JOIN students ON applications.student_id=students.id JOIN jobs ON applications.job_id=jobs.id
+                WHERE applications.job_id=? AND jobs.company_id=?
+    """,(job_id, current_user.actual_id))
+
+    applications=cur.fetchall()
+    con.close()
+
+    return render_template("company_view_applications.html",applications=applications,job_id=job_id)
 
 @app.route("/logout")
 @login_required

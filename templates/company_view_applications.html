@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}View Applications{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2 class="mb-4 text-center">Applications for Job ID {{ job_id }}</h2>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-info">
+                {% for message in messages %}
+                    <div>{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% if applications %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover shadow-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Student Name</th>
+                        <th>CGPA</th>
+                        <th>Resume</th>
+                        <th>Status</th>
+                        <th>Applied On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td>{{ app[0] }}</td>
+                        <td>{{ app[1] }}</td>
+                        <td>{{ app[2] }}</td>
+                        <td>
+                            {% if app[3] %}
+                                <a href="{{ app[3] }}" target="_blank" class="btn btn-sm btn-primary">
+                                    View Resume
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Not Uploaded</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if app[4] == "Selected" %}
+                                <span class="badge bg-success">Selected</span>
+                            {% elif app[4] == "Rejected" %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% elif app[4] == "Shortlisted" %}
+                                <span class="badge bg-primary">Shortlisted</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Applied</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ app[5] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-success text-center">
+            No applications found for this job.
+        </div>
+    {% endif %}
+
+    <div class="mt-3">
+        <a href="{{ url_for('company_manage_jobs') }}" class="btn btn-secondary">
+            Back to My Jobs
+        </a>
+    </div>
+
+</div>
+{% endblock %}
