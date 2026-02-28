@@ -208,7 +208,7 @@ def manage_students():
         return redirect(url_for("login"))
     
     search_query=request.args.get("search")
-    
+
     con=sqlite3.connect("placement.db")
     cur=con.cursor()
     if search_query:
@@ -317,7 +317,47 @@ def company_dashboard():
     if current_user.role!="company":
         flash("Unauthorized access")
         return redirect(url_for("login"))
-    return render_template("company_dashboard.html")
+
+    con=sqlite3.connect("placement.db")
+    cur=con.cursor()
+    cur.execute("SELECT COUNT(*) FROM jobs WHERE company_id=?",(current_user.actual_id,))
+    total_jobs=cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM jobs WHERE status='Approved' AND company_id=?",(current_user.actual_id,))
+    active_jobs=cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM jobs WHERE status='Closed' AND company_id=?",(current_user.actual_id,))
+    closed_jobs=cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM applications JOIN jobs ON applications.job_id=jobs.id WHERE jobs.company_id=?",(current_user.actual_id,))
+    total_applications=cur.fetchone()[0]
+    con.close()
+    return render_template("company_dashboard.html",total_jobs=total_jobs,active_jobs=active_jobs,closed_jobs=closed_jobs,total_applications=total_applications)
+
+@app.route("/company/post_job",methods=["GET","POST"])
+@login_required
+def post_job():
+    if current_user.role!="company":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+    if request.method=="POST":
+        title=request.form.get("title")
+        description=request.form.get("description")
+        skills=request.form.get("skills")
+        experience=request.form.get("experience")
+        salary=request.form.get("salary")
+        deadline=request.form.get("deadline")
+
+        con=sqlite3.connect("placement.db")
+        cur=con.cursor()
+        cur.execute("""INSERT INTO jobs (company_id,title,
+                    description,eligibility_criteria,deadline,status,
+                    created_at) VALUES(?,?,?,?,?,'Pending',CURRENT_TIMESTAMP)"""
+                    ,(current_user.actual_id,title,description,
+                      f"Skills:{skills} | Experience:{experience} | Salary:{salary}",
+                      deadline))
+        con.commit()
+        con.close()
+        flash("Job Posted successfully waiting for admin approval.")
+        return redirect(url_for("company_dashboard"))
+    return render_template("post_job.html")
 
 @app.route("/logout")
 @login_required
