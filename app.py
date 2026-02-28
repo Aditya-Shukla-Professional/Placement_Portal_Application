@@ -97,7 +97,211 @@ def admin_dashboard():
     if current_user.role!="admin":
         flash("Unauthorized access")
         return redirect(url_for("login"))
-    return render_template("admin_dashboard.html")
+    con=sqlite3.connect("placement.db")
+    cur=con.cursor()
+    cur.execute("SELECT COUNT(*) FROM students")
+    total_students=cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM companies")
+    total_companies=cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM applications")
+    total_applications=cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM jobs")
+    total_jobs=cur.fetchone()[0]
+    con.close()
+    return render_template("admin_dashboard.html",total_students=total_students,total_companies=total_companies,total_jobs=total_jobs,total_applications=total_applications)
+
+@app.route("/admin/pending_companies")
+@login_required
+def pending_companies():
+    if current_user.role!="admin":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+    con=sqlite3.connect("placement.db")
+    cur=con.cursor()
+    cur.execute("SELECT * FROM companies WHERE approval_status='Pending'")
+    companies=cur.fetchall()
+    con.close()
+    return render_template("pending_companies.html",companies=companies)
+
+@app.route("/admin/approve_company/<int:id>", methods=["POST"])
+@login_required
+def approve_company(id):
+    if current_user.role != "admin":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+
+    con = sqlite3.connect("placement.db")
+    cur = con.cursor()
+    cur.execute("UPDATE companies SET approval_status='Approved' WHERE id=?", (id,))
+    con.commit()
+    con.close()
+
+    flash("Company approved successfully!")
+    return redirect(url_for("pending_companies"))
+
+@app.route("/admin/reject_company/<int:id>", methods=["POST"])
+@login_required
+def reject_company(id):
+    if current_user.role != "admin":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+
+    con = sqlite3.connect("placement.db")
+    cur = con.cursor()
+    cur.execute("UPDATE companies SET approval_status='Rejected' WHERE id=?", (id,))
+    con.commit()
+    con.close()
+
+    flash("Company rejected successfully!")
+    return redirect(url_for("pending_companies"))
+
+@app.route("/admin/pending_jobs")
+@login_required
+def pending_jobs():
+    if current_user.role!="admin":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+    con=sqlite3.connect("placement.db")
+    cur=con.cursor()
+    cur.execute("SELECT * FROM jobs WHERE status='Pending'")
+    jobs=cur.fetchall()
+    con.close()
+    return render_template("pending_jobs.html",jobs=jobs)
+
+@app.route("/admin/approve_job/<int:id>", methods=["POST"])
+@login_required
+def approve_job(id):
+    if current_user.role != "admin":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+
+    con = sqlite3.connect("placement.db")
+    cur = con.cursor()
+    cur.execute("UPDATE jobs SET status='Approved' WHERE id=?", (id,))
+    con.commit()
+    con.close()
+
+    flash("Job approved successfully!")
+    return redirect(url_for("pending_jobs"))
+
+@app.route("/admin/reject_job/<int:id>", methods=["POST"])
+@login_required
+def reject_job(id):
+    if current_user.role != "admin":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+
+    con = sqlite3.connect("placement.db")
+    cur = con.cursor()
+    cur.execute("UPDATE jobs SET status='Closed' WHERE id=?", (id,))
+    con.commit()
+    con.close()
+
+    flash("Job closed successfully!")
+    return redirect(url_for("pending_jobs"))
+
+@app.route("/admin/manage_students")
+@login_required
+def manage_students():
+    if current_user.role != "admin":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+    
+    search_query=request.args.get("search")
+    
+    con=sqlite3.connect("placement.db")
+    cur=con.cursor()
+    if search_query:
+        cur.execute("SELECT * FROM students WHERE name LIKE ? OR email LIKE ? id LIKE ?",(f"%{search_query}%", f"%{search_query}%, f%{search_query}%"))
+    else:
+        cur.execute("SELECT * FROM students")
+    students = cur.fetchall()
+    con.close()
+    return render_template("manage_students.html", students=students)
+
+@app.route("/admin/deactivate_student/<int:id>", methods=["POST"])
+@login_required
+def deactivate_student(id):
+    if current_user.role != "admin":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+    con=sqlite3.connect("placement.db")
+    cur=con.cursor()
+    cur.execute("UPDATE students SET is_active=0 WHERE id=?",(id,))
+    con.commit()
+    con.close()
+    flash("Student deactivated successfully!")
+    return redirect(url_for("manage_students"))
+
+@app.route("/admin/manage_companies")
+@login_required
+def manage_companies():
+    if current_user.role != "admin":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+    
+    search_query=request.args.get("search")
+
+    con=sqlite3.connect("placement.db")
+    cur=con.cursor()
+    if search_query:
+        cur.execute("""
+            SELECT * FROM companies
+            WHERE company_name LIKE ?
+            OR email LIKE ?
+        """, (f"%{search_query}%", f"%{search_query}%"))
+    else:
+        cur.execute("SELECT * FROM companies")
+    companies=cur.fetchall()
+    con.close()
+    return render_template("manage_companies.html",companies=companies)
+
+@app.route("/admin/blacklist_company/<int:id>", methods=["POST"])
+@login_required
+def blacklist_company(id):
+    if current_user.role != "admin":
+       flash("Unauthorized access")
+       return redirect(url_for("login"))
+    con=sqlite3.connect("placement.db")
+    cur=con.cursor()
+    cur.execute("UPDATE companies SET is_blacklisted=1 WHERE id=?",(id,))
+    con.commit()
+    con.close()
+    flash("Company blacklisted successfully!")
+    return redirect(url_for("manage_companies"))
+
+@app.route("/admin/manage_jobs")
+@login_required
+def manage_jobs():
+    if current_user.role != "admin":
+       flash("Unauthorized access")
+       return redirect(url_for("login"))
+    con=sqlite3.connect("placement.db")
+    cur=con.cursor()
+    cur.execute("SELECT * FROM jobs JOIN companies ON jobs.company_id=companies.id")
+    jobs=cur.fetchall()
+    con.close()
+    return render_template("manage_jobs.html",jobs=jobs)
+
+@app.route("/admin/manage_applications")
+@login_required
+def manage_applications():
+    if current_user.role != "admin":
+       flash("Unauthorized access")
+       return redirect(url_for("login"))
+    con=sqlite3.connect("placement.db")
+    cur=con.cursor()
+    cur.execute("""
+        SELECT applications.id,students.name,companies.company_name,
+                jobs.title,applications.status,applications.applied_on
+                FROM applications JOIN students ON applications.student_id =
+                students.id JOIN jobs ON applications.job_id = jobs.id
+                JOIN companies ON jobs.company_id = companies.id
+                
+    """)
+    applications=cur.fetchall()
+    con.close()
+    return render_template("manage_applications.html",applications=applications)
 
 @app.route("/student_dashboard")
 @login_required

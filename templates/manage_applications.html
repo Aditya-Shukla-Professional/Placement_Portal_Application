@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Applications{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2 class="mb-4 text-center">Manage Applications</h2>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-info">
+                {% for message in messages %}
+                    <div>{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% if applications %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover shadow-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Student</th>
+                        <th>Company</th>
+                        <th>Job Title</th>
+                        <th>Status</th>
+                        <th>Applied On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td>{{ app[0] }}</td>
+                        <td>{{ app[1] }}</td>
+                        <td>{{ app[2] }}</td>
+                        <td>{{ app[3] }}</td>
+                        <td>
+                            {% if app[4] == "Selected" %}
+                                <span class="badge bg-success">Selected</span>
+                            {% elif app[4] == "Rejected" %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% elif app[4] == "Shortlisted" %}
+                                <span class="badge bg-primary">Shortlisted</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Applied</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ app[5] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-success text-center">
+            No applications found.
+        </div>
+    {% endif %}
+
+    <div class="mt-3">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+            Back to Dashboard
+        </a>
+    </div>
+
+</div>
+{% endblock %}

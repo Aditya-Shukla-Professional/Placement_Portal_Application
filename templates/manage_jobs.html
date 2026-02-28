@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Jobs{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2 class="mb-4 text-center">Manage Job Postings</h2>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-info">
+                {% for message in messages %}
+                    <div>{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% if jobs %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover shadow-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Company</th>
+                        <th>Title</th>
+                        <th>Deadline</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in jobs %}
+                    <tr>
+                        <td>{{ job[0] }}</td>
+                        <td>{{ job[1] }}</td>
+                        <td>{{ job[2] }}</td>
+                        <td>{{ job[3] }}</td>
+                        <td>
+                            {% if job[4] == "Approved" %}
+                                <span class="badge bg-success">Approved</span>
+                            {% elif job[4] == "Pending" %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% else %}
+                                <span class="badge bg-danger">Closed</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ job[5] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-success text-center">
+            No job postings found.
+        </div>
+    {% endif %}
+
+    <div class="mt-3">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+            Back to Dashboard
+        </a>
+    </div>
+
+</div>
+{% endblock %}

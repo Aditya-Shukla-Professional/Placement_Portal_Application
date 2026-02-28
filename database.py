@@ -142,16 +142,23 @@ def get_user_by_email(email,password):
         return {"id":admin[0],"role":"admin"}
     
     # Check Student
-    cursor.execute("SELECT id, hashed_password FROM students WHERE email=?",(email,))
+    cursor.execute("SELECT id, hashed_password, is_active FROM students WHERE email=?",(email,))
     student=cursor.fetchone()
-    if student and check_password_hash(student[1],password):
-        con.close()
-        return {"id":student[0],"role":"student"}
+    if student:
+        if student[2]==0:
+            con.close()
+            return {"error":"Student is not Active"}
+        if check_password_hash(student[1],password):
+            con.close()
+            return {"id":student[0],"role":"student"}
     
     # Check Company
-    cursor.execute("SELECT id, hashed_password, approval_status FROM companies WHERE email=?",(email,))
+    cursor.execute("SELECT id, hashed_password, approval_status, is_blacklisted FROM companies WHERE email=?",(email,))
     company=cursor.fetchone()
     if company:
+        if company[3] == 1:
+            con.close()
+            return {"error": "Company is blacklisted"}
         if company[2]!="Approved":
             con.close()
             return {"error":"Company not approved yet"}
