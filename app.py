@@ -1,9 +1,11 @@
 import sqlite3
+import os
 from datetime import date
 from flask import Flask,render_template,request,redirect,url_for,flash
 from flask_login import LoginManager, login_user, login_required,logout_user,UserMixin,current_user
 from database import get_user_by_email, create_company, create_student
 from werkzeug.security import check_password_hash
+from werkzeug.utils import secure_filename
 
 app=Flask(__name__)
 
@@ -213,7 +215,7 @@ def manage_students():
     con=sqlite3.connect("placement.db")
     cur=con.cursor()
     if search_query:
-        cur.execute("SELECT * FROM students WHERE name LIKE ? OR email LIKE ? id LIKE ?",(f"%{search_query}%", f"%{search_query}%, f%{search_query}%"))
+        cur.execute("SELECT * FROM students WHERE name LIKE ? OR email LIKE ? OR id LIKE ?",(f"%{search_query}%", f"%{search_query}%, f%{search_query}%"))
     else:
         cur.execute("SELECT * FROM students")
     students = cur.fetchall()
@@ -307,10 +309,233 @@ def manage_applications():
 @app.route("/student_dashboard")
 @login_required
 def student_dashboard():
+    if current_user.role != "student":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+
+    con = sqlite3.connect("placement.db")
+    cur = con.cursor()
+
+    # Total Applications
+    cur.execute("""
+        SELECT COUNT(*) FROM applications
+        WHERE student_id = ?
+    """, (current_user.actual_id,))
+    total_applied = cur.fetchone()[0]
+
+    # Status Counts
+    cur.execute("""
+        SELECT COUNT(*) FROM applications
+        WHERE student_id = ? AND status = 'Shortlisted'
+    """, (current_user.actual_id,))
+    shortlisted = cur.fetchone()[0]
+
+    cur.execute("""
+        SELECT COUNT(*) FROM applications
+        WHERE student_id = ? AND status = 'Selected'
+    """, (current_user.actual_id,))
+    selected = cur.fetchone()[0]
+
+    cur.execute("""
+        SELECT COUNT(*) FROM applications
+        WHERE student_id = ? AND status = 'Rejected'
+    """, (current_user.actual_id,))
+    rejected = cur.fetchone()[0]
+
+    # 🔔 Notifications (status changed)
+    cur.execute("""
+        SELECT jobs.title,
+               companies.company_name,
+               applications.status
+        FROM applications
+        JOIN jobs ON applications.job_id = jobs.id
+        JOIN companies ON jobs.company_id = companies.id
+        WHERE applications.student_id = ?
+        AND applications.status IN ('Shortlisted','Selected','Rejected')
+        ORDER BY applications.applied_on DESC
+    """, (current_user.actual_id,))
+
+    notifications = cur.fetchall()
+
+    con.close()
+
+    return render_template(
+        "student_dashboard.html",
+        total_applied=total_applied,
+        shortlisted=shortlisted,
+        selected=selected,
+        rejected=rejected,
+        notifications=notifications
+    )
+
+
+@app.route("/student/profile", methods=["GET","POST"])
+@login_required
+def student_profile():
     if current_user.role!="student":
         flash("Unauthorized access")
         return redirect(url_for("login"))
-    return render_template("student_dashboard.html")
+    con=sqlite3.connect("placement.db")
+    cur=con.cursor()
+    if request.method=="POST":
+        branch=request.form.get("branch")
+        cgpa=request.form.get("cgpa")
+        skills=request.form.get("skills")
+        resume=request.files.get("resume")
+        resume_path=None
+
+        if resume and resume.filename!="":
+            filename=secure_filename(resume.filename)
+            upload_folder=os.path.join("static","uploads")
+            os.makedirs(upload_folder,exist_ok=True)
+            file_path=os.path.join(upload_folder,filename)
+            resume.save(file_path)
+            resume_path=file_path
+        
+        if resume_path:
+            cur.execute("UPDATE students SET branch=?, cgpa=?, skills=?, resume_path=? WHERE id=?",(branch,cgpa,skills,resume_path,current_user.actual_id))
+        else:
+            cur.execute("UPDATE students SET branch=?, cgpa=?, skills=? WHERE id=?",(branch,cgpa,skills,current_user.actual_id))
+        
+        con.commit()
+        flash("Profile updated successfully!")
+
+    cur.execute("SELECT name,email,branch,cgpa,skills,resume_path FROM students WHERE id=?",(current_user.actual_id,))
+    student=cur.fetchone()
+    
+    con.close()
+    return render_template("student_profile.html",student=student)
+
+@app.route("/student/jobs")
+@login_required
+def student_jobs():
+    if current_user.role != "student":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+
+    search_query = request.args.get("search")
+
+    con = sqlite3.connect("placement.db")
+    cur = con.cursor()
+
+    if search_query:
+        cur.execute("""
+            SELECT jobs.id,
+                   jobs.title,
+                   jobs.description,
+                   jobs.eligibility_criteria,
+                   jobs.deadline,
+                   companies.company_name
+            FROM jobs
+            JOIN companies ON jobs.company_id = companies.id
+            WHERE jobs.status = 'Approved'
+            AND (
+                companies.company_name LIKE ?
+                OR jobs.title LIKE ?
+                OR jobs.eligibility_criteria LIKE ?
+            )
+        """, (
+            f"%{search_query}%",
+            f"%{search_query}%",
+            f"%{search_query}%"
+        ))
+    else:
+        cur.execute("""
+            SELECT jobs.id,
+                   jobs.title,
+                   jobs.description,
+                   jobs.eligibility_criteria,
+                   jobs.deadline,
+                   companies.company_name
+            FROM jobs
+            JOIN companies ON jobs.company_id = companies.id
+            WHERE jobs.status = 'Approved'
+        """)
+
+    jobs = cur.fetchall()
+    con.close()
+
+    return render_template("student_jobs.html", jobs=jobs)
+
+@app.route("/student/apply/<int:job_id>", methods=["POST"])
+@login_required
+def apply_job(job_id):
+    if current_user.role != "student":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+
+    con = sqlite3.connect("placement.db")
+    cur = con.cursor()
+
+    # 1️⃣ Check student is active
+    cur.execute("SELECT is_active FROM students WHERE id=?", (current_user.actual_id,))
+    student = cur.fetchone()
+
+    if not student or student[0] == 0:
+        con.close()
+        flash("Your account is not active.")
+        return redirect(url_for("student_jobs"))
+
+    # 2️⃣ Check job is Approved and not Closed
+    cur.execute("SELECT status FROM jobs WHERE id=?", (job_id,))
+    job = cur.fetchone()
+
+    if not job or job[0] != "Approved":
+        con.close()
+        flash("This job is not available.")
+        return redirect(url_for("student_jobs"))
+
+    # 3️⃣ Check already applied
+    cur.execute("""
+        SELECT id FROM applications
+        WHERE student_id=? AND job_id=?
+    """, (current_user.actual_id, job_id))
+
+    already_applied = cur.fetchone()
+
+    if already_applied:
+        con.close()
+        flash("You have already applied for this job.")
+        return redirect(url_for("student_jobs"))
+
+    # 4️⃣ Insert application
+    cur.execute("""
+        INSERT INTO applications (student_id, job_id, status, applied_on)
+        VALUES (?, ?, 'Applied', CURRENT_TIMESTAMP)
+    """, (current_user.actual_id, job_id))
+
+    con.commit()
+    con.close()
+
+    flash("Application submitted successfully!")
+    return redirect(url_for("student_jobs"))
+
+@app.route("/student/my_applications")
+@login_required
+def my_applications():
+    if current_user.role != "student":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+
+    con = sqlite3.connect("placement.db")
+    cur = con.cursor()
+
+    cur.execute("""
+        SELECT jobs.title,
+               companies.company_name,
+               applications.applied_on,
+               applications.status
+        FROM applications
+        JOIN jobs ON applications.job_id = jobs.id
+        JOIN companies ON jobs.company_id = companies.id
+        WHERE applications.student_id = ?
+        ORDER BY applications.applied_on DESC
+    """, (current_user.actual_id,))
+
+    applications = cur.fetchall()
+    con.close()
+
+    return render_template("student_my_applications.html", applications=applications)
 
 @app.route("/company_dashboard")
 @login_required

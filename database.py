@@ -61,10 +61,15 @@ jobTable="""
         description TEXT NOT NULL,
         eligibility_criteria TEXT NOT NULL,
         deadline TEXT NOT NULL,
+        required_skills TEXT,
+        experience_required TEXT,
+        salary_range TEXT,
+        job_type TEXT CHECK(job_type IN ('Full-time','Internship','Contract')) DEFAULT 'Full-time',
+        location TEXT,
         status TEXT CHECK(status in ('Pending','Approved','Closed')) DEFAULT 'Pending' NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (company_id) REFERENCES companies(id)
-        ON DELETE CASCADE 
+        ON DELETE CASCADE
         ON UPDATE CASCADE
     )
 """

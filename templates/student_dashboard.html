@@ -1,7 +1,61 @@
-{% extends "base.html" %}
+@app.route("/student_dashboard")
+@login_required
+def student_dashboard():
+    if current_user.role != "student":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
 
-{% block title %}Student{% endblock %}
+    con = sqlite3.connect("placement.db")
+    cur = con.cursor()
 
-{% block content %}
-<h1>Student DashBoard</h1>
-{% endblock %}
+    # Total Applications
+    cur.execute("""
+        SELECT COUNT(*) FROM applications
+        WHERE student_id = ?
+    """, (current_user.actual_id,))
+    total_applied = cur.fetchone()[0]
+
+    # Status Counts
+    cur.execute("""
+        SELECT COUNT(*) FROM applications
+        WHERE student_id = ? AND status = 'Shortlisted'
+    """, (current_user.actual_id,))
+    shortlisted = cur.fetchone()[0]
+
+    cur.execute("""
+        SELECT COUNT(*) FROM applications
+        WHERE student_id = ? AND status = 'Selected'
+    """, (current_user.actual_id,))
+    selected = cur.fetchone()[0]
+
+    cur.execute("""
+        SELECT COUNT(*) FROM applications
+        WHERE student_id = ? AND status = 'Rejected'
+    """, (current_user.actual_id,))
+    rejected = cur.fetchone()[0]
+
+    # 🔔 Notifications (status changed)
+    cur.execute("""
+        SELECT jobs.title,
+               companies.company_name,
+               applications.status
+        FROM applications
+        JOIN jobs ON applications.job_id = jobs.id
+        JOIN companies ON jobs.company_id = companies.id
+        WHERE applications.student_id = ?
+        AND applications.status IN ('Shortlisted','Selected','Rejected')
+        ORDER BY applications.applied_on DESC
+    """, (current_user.actual_id,))
+
+    notifications = cur.fetchall()
+
+    con.close()
+
+    return render_template(
+        "student_dashboard.html",
+        total_applied=total_applied,
+        shortlisted=shortlisted,
+        selected=selected,
+        rejected=rejected,
+        notifications=notifications
+    )
