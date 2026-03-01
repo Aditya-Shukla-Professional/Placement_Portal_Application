@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Applications Overview{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2 class="mb-4 text-center">Applications Overview</h2>
+
+    {% if applications %}
+    <table class="table table-bordered table-hover shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Student</th>
+                <th>Job</th>
+                <th>Status</th>
+                <th>Applied On</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in applications %}
+            <tr>
+                <td>{{ app[0] }}</td>
+                <td>{{ app[1] }}</td>
+                <td>{{ app[2] }}</td>
+                <td>{{ app[3] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <div class="alert alert-warning text-center">
+            No applications found.
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

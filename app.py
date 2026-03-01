@@ -6,6 +6,7 @@ from flask_login import LoginManager, login_user, login_required,logout_user,Use
 from database import get_user_by_email, create_company, create_student
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
+from datetime import datetime
 
 app=Flask(__name__)
 
@@ -215,7 +216,7 @@ def manage_students():
     con=sqlite3.connect("placement.db")
     cur=con.cursor()
     if search_query:
-        cur.execute("SELECT * FROM students WHERE name LIKE ? OR email LIKE ? OR id LIKE ?",(f"%{search_query}%", f"%{search_query}%, f%{search_query}%"))
+        cur.execute("SELECT * FROM students WHERE name LIKE ? OR email LIKE ? OR id LIKE ?",(f"%{search_query}%", f"%{search_query}%", f"%{search_query}%"))
     else:
         cur.execute("SELECT * FROM students")
     students = cur.fetchall()
@@ -305,6 +306,34 @@ def manage_applications():
     applications=cur.fetchall()
     con.close()
     return render_template("manage_applications.html",applications=applications)
+
+@app.route("/admin/placement_tracking")
+@login_required
+def placement_tracking():
+    if current_user.role != "admin":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+
+    con = sqlite3.connect("placement.db")
+    cur = con.cursor()
+
+    cur.execute("""
+        SELECT students.name,
+               companies.company_name,
+               jobs.title,
+               applications.status,
+               applications.applied_on
+        FROM applications
+        JOIN students ON applications.student_id = students.id
+        JOIN jobs ON applications.job_id = jobs.id
+        JOIN companies ON jobs.company_id = companies.id
+        ORDER BY applications.applied_on DESC
+    """)
+
+    applications = cur.fetchall()
+    con.close()
+
+    return render_template("admin_application_tracking.html", applications=applications)
 
 @app.route("/student_dashboard")
 @login_required
@@ -476,18 +505,44 @@ def apply_job(job_id):
         flash("Your account is not active.")
         return redirect(url_for("student_jobs"))
 
-    # 2️⃣ Check job is Approved and not Closed
-    cur.execute("SELECT status FROM jobs WHERE id=?", (job_id,))
+    # 2️⃣ Check job status and deadline
+    cur.execute("""
+        SELECT status, deadline
+        FROM jobs
+        WHERE id=?
+    """, (job_id,))
     job = cur.fetchone()
 
-    if not job or job[0] != "Approved":
+    if not job:
+        con.close()
+        flash("Job does not exist.")
+        return redirect(url_for("student_jobs"))
+
+    job_status, job_deadline = job
+
+    # Must be Approved
+    if job_status != "Approved":
         con.close()
         flash("This job is not available.")
         return redirect(url_for("student_jobs"))
 
-    # 3️⃣ Check already applied
+    # 3️⃣ Deadline check
+    try:
+        deadline_date = datetime.strptime(job_deadline, "%Y-%m-%d")
+        if deadline_date < datetime.now():
+            con.close()
+            flash("Application deadline has passed.")
+            return redirect(url_for("student_jobs"))
+    except:
+        # If deadline format is unexpected, block application
+        con.close()
+        flash("Invalid job deadline.")
+        return redirect(url_for("student_jobs"))
+
+    # 4️⃣ Check duplicate application
     cur.execute("""
-        SELECT id FROM applications
+        SELECT id
+        FROM applications
         WHERE student_id=? AND job_id=?
     """, (current_user.actual_id, job_id))
 
@@ -498,7 +553,7 @@ def apply_job(job_id):
         flash("You have already applied for this job.")
         return redirect(url_for("student_jobs"))
 
-    # 4️⃣ Insert application
+    # 5️⃣ Insert application
     cur.execute("""
         INSERT INTO applications (student_id, job_id, status, applied_on)
         VALUES (?, ?, 'Applied', CURRENT_TIMESTAMP)
@@ -537,15 +592,51 @@ def my_applications():
 
     return render_template("student_my_applications.html", applications=applications)
 
+@app.route("/student/application_history")
+@login_required
+def student_application_history():
+    if current_user.role != "student":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+
+    con = sqlite3.connect("placement.db")
+    cur = con.cursor()
+
+    cur.execute("""
+        SELECT jobs.title,
+               companies.company_name,
+               applications.status,
+               applications.applied_on
+        FROM applications
+        JOIN jobs ON applications.job_id = jobs.id
+        JOIN companies ON jobs.company_id = companies.id
+        WHERE applications.student_id = ?
+        ORDER BY applications.applied_on DESC
+    """, (current_user.actual_id,))
+
+    applications = cur.fetchall()
+    con.close()
+
+    return render_template("student_application_history.html", applications=applications)
+
 @app.route("/company_dashboard")
 @login_required
 def company_dashboard():
     if current_user.role!="company":
         flash("Unauthorized access")
         return redirect(url_for("login"))
+    
 
     con=sqlite3.connect("placement.db")
     cur=con.cursor()
+
+    cur.execute("SELECT approval_status, is_blacklisted FROM companies WHERE id=?", (current_user.actual_id,))
+    company = cur.fetchone()
+    if not company or company[0] != "Approved" or company[1] == 1:
+            con.close()
+            flash("Your company is not allowed to post jobs.")
+            return redirect(url_for("company_dashboard"))
+    
     cur.execute("SELECT COUNT(*) FROM jobs WHERE company_id=?",(current_user.actual_id,))
     total_jobs=cur.fetchone()[0]
     cur.execute("SELECT COUNT(*) FROM jobs WHERE status='Approved' AND company_id=?",(current_user.actual_id,))
@@ -573,6 +664,15 @@ def post_job():
 
         con=sqlite3.connect("placement.db")
         cur=con.cursor()
+        # Check company approval status
+        cur.execute("SELECT approval_status, is_blacklisted FROM companies WHERE id=?", (current_user.actual_id,))
+        company = cur.fetchone()
+
+        if not company or company[0] != "Approved" or company[1] == 1:
+            con.close()
+            flash("Your company is not allowed to post jobs.")
+            return redirect(url_for("company_dashboard"))
+        
         cur.execute("""INSERT INTO jobs (company_id,title,
                     description,eligibility_criteria,deadline,status,
                     created_at) VALUES(?,?,?,?,?,'Pending',CURRENT_TIMESTAMP)"""
@@ -648,7 +748,7 @@ def update_application_status(application_id, new_status):
         return redirect(url_for("login"))
 
     # Allowed statuses
-    allowed_status = ["Shortlisted", "Selected", "Rejected"]
+    allowed_status = ["Shortlisted","Interview","Selected","Rejected","Placed"]
 
     if new_status not in allowed_status:
         flash("Invalid status update.")
@@ -718,6 +818,33 @@ def shortlisted_candidates():
         "company_shortlisted_candidates.html",
         candidates=candidates
     )
+
+@app.route("/company/application_history")
+@login_required
+def company_application_history():
+    if current_user.role != "company":
+        flash("Unauthorized access")
+        return redirect(url_for("login"))
+
+    con = sqlite3.connect("placement.db")
+    cur = con.cursor()
+
+    cur.execute("""
+        SELECT students.name,
+               jobs.title,
+               applications.status,
+               applications.applied_on
+        FROM applications
+        JOIN students ON applications.student_id = students.id
+        JOIN jobs ON applications.job_id = jobs.id
+        WHERE jobs.company_id = ?
+        ORDER BY applications.applied_on DESC
+    """, (current_user.actual_id,))
+
+    applications = cur.fetchall()
+    con.close()
+
+    return render_template("company_application_overview.html", applications=applications)
 
 @app.route("/logout")
 @login_required
