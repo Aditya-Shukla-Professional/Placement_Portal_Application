@@ -1,61 +1,131 @@
-@app.route("/student_dashboard")
-@login_required
-def student_dashboard():
-    if current_user.role != "student":
-        flash("Unauthorized access")
-        return redirect(url_for("login"))
+{% extends "base.html" %}
 
-    con = sqlite3.connect("placement.db")
-    cur = con.cursor()
+{% block title %}Student Dashboard{% endblock %}
 
-    # Total Applications
-    cur.execute("""
-        SELECT COUNT(*) FROM applications
-        WHERE student_id = ?
-    """, (current_user.actual_id,))
-    total_applied = cur.fetchone()[0]
+{% block content %}
 
-    # Status Counts
-    cur.execute("""
-        SELECT COUNT(*) FROM applications
-        WHERE student_id = ? AND status = 'Shortlisted'
-    """, (current_user.actual_id,))
-    shortlisted = cur.fetchone()[0]
+<div class="container mt-4">
 
-    cur.execute("""
-        SELECT COUNT(*) FROM applications
-        WHERE student_id = ? AND status = 'Selected'
-    """, (current_user.actual_id,))
-    selected = cur.fetchone()[0]
+    <h2 class="mb-4 text-center">Student Dashboard</h2>
 
-    cur.execute("""
-        SELECT COUNT(*) FROM applications
-        WHERE student_id = ? AND status = 'Rejected'
-    """, (current_user.actual_id,))
-    rejected = cur.fetchone()[0]
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-info">
+                {% for message in messages %}
+                    <div>{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
-    # 🔔 Notifications (status changed)
-    cur.execute("""
-        SELECT jobs.title,
-               companies.company_name,
-               applications.status
-        FROM applications
-        JOIN jobs ON applications.job_id = jobs.id
-        JOIN companies ON jobs.company_id = companies.id
-        WHERE applications.student_id = ?
-        AND applications.status IN ('Shortlisted','Selected','Rejected')
-        ORDER BY applications.applied_on DESC
-    """, (current_user.actual_id,))
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
 
-    notifications = cur.fetchall()
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm border-0 bg-primary text-white">
+                <div class="card-body">
+                    <h6>Total Applications</h6>
+                    <h3>{{ total_applied | default(0) }}</h3>
+                </div>
+            </div>
+        </div>
 
-    con.close()
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm border-0 bg-warning text-dark">
+                <div class="card-body">
+                    <h6>Shortlisted</h6>
+                    <h3>{{ shortlisted | default(0) }}</h3>
+                </div>
+            </div>
+        </div>
 
-    return render_template(
-        "student_dashboard.html",
-        total_applied=total_applied,
-        shortlisted=shortlisted,
-        selected=selected,
-        rejected=rejected,
-        notifications=notifications
-    )
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm border-0 bg-success text-white">
+                <div class="card-body">
+                    <h6>Selected</h6>
+                    <h3>{{ selected | default(0) }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm border-0 bg-danger text-white">
+                <div class="card-body">
+                    <h6>Rejected</h6>
+                    <h3>{{ rejected | default(0) }}</h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row g-3 mb-5">
+
+        <div class="col-md-4">
+            <a href="{{ url_for('student_jobs') }}" class="btn btn-primary w-100">
+                🔎 Browse Jobs
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{{ url_for('my_applications') }}" class="btn btn-success w-100">
+                📄 My Applications
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{{ url_for('student_profile') }}" class="btn btn-secondary w-100">
+                👤 My Profile
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Notifications -->
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-dark text-white">
+            🔔 Application Updates
+        </div>
+
+        <div class="card-body">
+
+            {% if notifications %}
+                <ul class="list-group">
+
+                    {% for job, company, status in notifications %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                            <div>
+                                <strong>{{ job }}</strong> at {{ company }}
+                            </div>
+
+                            {% if status == "Selected" %}
+                                <span class="badge bg-success">Selected</span>
+                            {% elif status == "Shortlisted" %}
+                                <span class="badge bg-warning text-dark">Shortlisted</span>
+                            {% elif status == "Rejected" %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ status }}</span>
+                            {% endif %}
+
+                        </li>
+                    {% endfor %}
+
+                </ul>
+            {% else %}
+
+                <p class="text-muted">No updates yet.</p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

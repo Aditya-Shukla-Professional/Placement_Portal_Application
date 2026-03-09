@@ -1,13 +1,6 @@
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# Creating the SQL Tables
-connection=sqlite3.connect("placement.db")
-cursor=connection.cursor()
-
-# Enabling Foreign key in SQLite
-connection.execute("PRAGMA foreign_keys = ON")
-
 # Creating all the required tables
 # Creating admin table
 adminTable=""" 
@@ -45,6 +38,7 @@ studentTable="""
         gender TEXT CHECK(gender in ('Male','Female','Other')) NOT NULL,
         hashed_password TEXT NOT NULL,
         resume_path TEXT,
+        skills TEXT,
         branch TEXT NOT NULL,
         cgpa REAL CHECK(cgpa BETWEEN 0 AND 10) DEFAULT 0,
         is_active INTEGER DEFAULT 1 NOT NULL,
@@ -113,23 +107,28 @@ placementTable="""
     )
 """
 
-# Executing the tables
-cursor.execute(adminTable)
-cursor.execute(companyTable)
-cursor.execute(studentTable)
-cursor.execute(jobTable)
-cursor.execute(applicationTable)
-cursor.execute(placementTable)
+def init_db():
+    connection = sqlite3.connect("placement.db")
+    cursor = connection.cursor()
 
-# This will create a default admin if no other admin is present
-cursor.execute("SELECT id from admin WHERE role='admin' LIMIT 1")
-if not cursor.fetchone():
-    cursor.execute("INSERT INTO admin (name,email,hashed_password,role) VALUES (?,?,?,?)",
-                   ("admin","admin@placement.com",generate_password_hash("admin123"),"admin"))
+    connection.execute("PRAGMA foreign_keys = ON")
+
+    cursor.execute(adminTable)
+    cursor.execute(companyTable)
+    cursor.execute(studentTable)
+    cursor.execute(jobTable)
+    cursor.execute(applicationTable)
+    cursor.execute(placementTable)
+
+    cursor.execute("SELECT id FROM admin WHERE role='admin' LIMIT 1")
+    if not cursor.fetchone():
+        cursor.execute(
+            "INSERT INTO admin (name,email,hashed_password,role) VALUES (?,?,?,?)",
+            ("admin","admin@placement.com",generate_password_hash("admin123"),"admin")
+        )
+
     connection.commit()
-
-connection.commit()
-connection.close()
+    connection.close()
 
 
 # Login % Register Logic
@@ -185,10 +184,10 @@ def create_student(name,email,age,gender,password,branch,cgpa):
     con.close()
 
 # Creating Company
-def create_company(name,email,password,contact,website):
+def create_company(company_name,email,password,contact,website):
     con=sqlite3.connect("placement.db")
     cursor=con.cursor()
     cursor.execute("INSERT INTO companies(company_name,email,hashed_password,hr_contact,website) VALUES(?,?,?,?,?)",
-                   (name,email,generate_password_hash(password),contact,website))
+                   (company_name,email,generate_password_hash(password),contact,website))
     con.commit()
     con.close()

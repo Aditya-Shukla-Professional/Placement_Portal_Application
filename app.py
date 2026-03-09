@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from database import init_db
 from datetime import date
 from flask import Flask,render_template,request,redirect,url_for,flash
 from flask_login import LoginManager, login_user, login_required,logout_user,UserMixin,current_user
@@ -11,7 +12,7 @@ from datetime import datetime
 app=Flask(__name__)
 
 app.secret_key = "dsjcn34y7r3fbf9218wdneuf#^%#&@()" # Secret key
-
+ 
 
 # Login Manager
 login_manager= LoginManager()
@@ -20,9 +21,9 @@ login_manager.login_view="login"
 
 class User(UserMixin):
     def __init__(self, id, role):
-        self.id = f"{role}-{id}"
-        self.role = role
-        self.actual_id=id
+        self.actual_id = int(id)  # Force integer for DB queries
+        self.role = str(role).lower() # Normalize to lowercase
+        self.id = f"{self.role}-{self.actual_id}"
 
 @app.route("/") # Home Page
 def home():
@@ -31,15 +32,16 @@ def home():
 @app.route("/login", methods=["GET","POST"]) # Used to login by students and companies
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("home"))
+        return redirect(url_for(f"{current_user.role}_dashboard"))
     if request.method=="POST":
         email=request.form.get("email")
         password=request.form.get("password")
 
         user_obj=get_user_by_email(email,password)
+        print("LOGIN DEBUG:", user_obj)   # Temporary
 
         if user_obj and "error" in user_obj:
-            flash("Company not yet approved")
+            flash(user_obj["error"])
             return render_template("login.html")
         if not user_obj:
             flash("Invalid email or password")
@@ -381,7 +383,7 @@ def student_dashboard():
         JOIN companies ON jobs.company_id = companies.id
         WHERE applications.student_id = ?
         AND applications.status IN ('Shortlisted','Selected','Rejected')
-        ORDER BY applications.applied_on DESC
+        ORDER BY applications.applied_on DESC LIMIT 5
     """, (current_user.actual_id,))
 
     notifications = cur.fetchall()
@@ -852,19 +854,15 @@ def logout():
     logout_user()
     return redirect(url_for("login"))
 
-
-
-
-
-
 @login_manager.user_loader
 def load_user(user_id):
     try:
-        role,actual_id=user_id.split("-")
-        actual_id=int(actual_id)
-    except:
+        # Split 'student-1' into ['student', '1']
+        role, actual_id = user_id.split("-")
+        return User(int(actual_id), role)
+    except (ValueError, AttributeError):
         return None
-    return User(actual_id,role)
 
 if __name__=="__main__":
+    init_db()
     app.run(port=5000,debug=True)

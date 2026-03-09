@@ -48,15 +48,29 @@
                         <td>{{ job[4] }}</td>
                         <td>
                             {% if job[3] == "Approved" %}
-                                <form action="{{ url_for('close_job', job_id=job[0]) }}" method="POST">
+                                                
+                                <a href="{{ url_for('view_applications', job_id=job[0]) }}" class="btn btn-warning btn-sm mb-1">
+                                    View Applications
+                                </a>
+                            
+                                <form action="{{ url_for('close_job', job_id=job[0]) }}" method="POST" style="display:inline;">
                                     <button class="btn btn-danger btn-sm">
                                         Close Job
                                     </button>
                                 </form>
-                            {% else %}
+                            
+                            {% elif job[3] == "Pending" %}
+                            
                                 <button class="btn btn-secondary btn-sm" disabled>
-                                    No Action
+                                    Waiting Approval
                                 </button>
+                            
+                            {% else %}
+                            
+                                <a href="{{ url_for('view_applications', job_id=job[0]) }}" class="btn btn-warning btn-sm">
+                                    View Applications
+                                </a>
+                            
                             {% endif %}
                         </td>
                     </tr>
