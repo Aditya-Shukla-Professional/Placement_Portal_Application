@@ -10,7 +10,7 @@ A full-stack web application designed to streamline the campus placement process
 </p>
 
 <p align="center">
-<b>Built using Flask, SQLite, Bootstrap, and Jinja2</b>
+<b>Built using Flask, SQLite, Python, Bootstrap, and Jinja2</b>
 </p>
 
 <hr>
@@ -286,7 +286,7 @@ Placement_Portal_Application
 <h3>1. Clone the Repository</h3>
 
 <pre>
-git clone https://github.com/yourusername/Placement_Portal_Application.git
+git clone https://github.com/AdityaShukla999/Placement_Portal_Application.git
 </pre>
 
 <h3>2. Navigate to Project Folder</h3>
@@ -341,6 +341,12 @@ Computer Science and Data Science Enthusiast
 
 <p align="center">
 ⭐ If you found this project useful, consider giving it a star on GitHub.
+</p>
+
+<hr>
+
+<p align="center">
+Made with 💖 by Aditya Shukla
 </p>
 
 </body>
