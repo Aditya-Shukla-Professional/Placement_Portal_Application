@@ -4,14 +4,14 @@
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="container mt-5">
 
-    <h2 class="mb-4 text-center">Student Dashboard</h2>
+    <h2 class="mb-5 text-center">Student Dashboard</h2>
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages() %}
         {% if messages %}
-            <div class="alert alert-info">
+            <div class="alert alert-info shadow-sm">
                 {% for message in messages %}
                     <div>{{ message }}</div>
                 {% endfor %}
@@ -23,37 +23,37 @@
     <div class="row g-4 mb-4">
 
         <div class="col-md-3">
-            <div class="card text-center shadow-sm border-0 bg-primary text-white">
+            <div class="card dashboard-card text-center shadow-sm">
                 <div class="card-body">
-                    <h6>Total Applications</h6>
-                    <h3>{{ total_applied | default(0) }}</h3>
+                    <h6 class="text-muted">Total Applications</h6>
+                    <h2 class="text-primary">{{ total_applied | default(0) }}</h2>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card text-center shadow-sm border-0 bg-warning text-dark">
+            <div class="card dashboard-card text-center shadow-sm">
                 <div class="card-body">
-                    <h6>Shortlisted</h6>
-                    <h3>{{ shortlisted | default(0) }}</h3>
+                    <h6 class="text-muted">Shortlisted</h6>
+                    <h2 class="text-warning">{{ shortlisted | default(0) }}</h2>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card text-center shadow-sm border-0 bg-success text-white">
+            <div class="card dashboard-card text-center shadow-sm">
                 <div class="card-body">
-                    <h6>Selected</h6>
-                    <h3>{{ selected | default(0) }}</h3>
+                    <h6 class="text-muted">Selected</h6>
+                    <h2 class="text-success">{{ selected | default(0) }}</h2>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card text-center shadow-sm border-0 bg-danger text-white">
+            <div class="card dashboard-card text-center shadow-sm">
                 <div class="card-body">
-                    <h6>Rejected</h6>
-                    <h3>{{ rejected | default(0) }}</h3>
+                    <h6 class="text-muted">Rejected</h6>
+                    <h2 class="text-danger">{{ rejected | default(0) }}</h2>
                 </div>
             </div>
         </div>
@@ -64,19 +64,19 @@
     <div class="row g-3 mb-5">
 
         <div class="col-md-4">
-            <a href="{{ url_for('student_jobs') }}" class="btn btn-primary w-100">
+            <a href="{{ url_for('student_jobs') }}" class="btn btn-primary w-100 shadow-sm">
                 🔎 Browse Jobs
             </a>
         </div>
 
         <div class="col-md-4">
-            <a href="{{ url_for('my_applications') }}" class="btn btn-success w-100">
+            <a href="{{ url_for('my_applications') }}" class="btn btn-success w-100 shadow-sm">
                 📄 My Applications
             </a>
         </div>
 
         <div class="col-md-4">
-            <a href="{{ url_for('student_profile') }}" class="btn btn-secondary w-100">
+            <a href="{{ url_for('student_profile') }}" class="btn btn-secondary w-100 shadow-sm">
                 👤 My Profile
             </a>
         </div>
@@ -86,14 +86,14 @@
     <!-- Notifications -->
     <div class="card shadow-sm">
 
-        <div class="card-header bg-dark text-white">
+        <div class="card-header">
             🔔 Application Updates
         </div>
 
         <div class="card-body">
 
             {% if notifications %}
-                <ul class="list-group">
+                <ul class="list-group list-group-flush">
 
                     {% for job, company, status in notifications %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">

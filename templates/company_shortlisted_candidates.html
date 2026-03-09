@@ -3,53 +3,63 @@
 {% block title %}Shortlisted Candidates{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-5">
 
     <h2 class="mb-4 text-center">Shortlisted Candidates</h2>
 
     {% if candidates %}
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover shadow-sm">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Student ID</th>
-                        <th>Name</th>
-                        <th>CGPA</th>
-                        <th>Applied For</th>
-                        <th>Applied On</th>
-                        <th>Resume</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for c in candidates %}
-                    <tr>
-                        <td>{{ c[0] }}</td>
-                        <td>{{ c[1] }}</td>
-                        <td>{{ c[2] }}</td>
-                        <td>{{ c[4] }}</td>
-                        <td>{{ c[5] }}</td>
-                        <td>
-                            {% if c[3] %}
-                                <a href="{{ c[3] }}" target="_blank" class="btn btn-sm btn-primary">
-                                    View Resume
-                                </a>
-                            {% else %}
-                                <span class="text-muted">Not Uploaded</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>CGPA</th>
+                                <th>Applied For</th>
+                                <th>Applied On</th>
+                                <th>Resume</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for c in candidates %}
+                            <tr>
+                                <td>{{ c[0] }}</td>
+                                <td>{{ c[1] }}</td>
+                                <td>{{ c[2] }}</td>
+                                <td>{{ c[4] }}</td>
+                                <td>{{ c[5] }}</td>
+                                <td>
+                                    {% if c[3] %}
+                                        <a href="{{ c[3] }}" target="_blank" class="btn btn-primary btn-sm shadow-sm">
+                                            View Resume
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Not Uploaded</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
         </div>
+
     {% else %}
-        <div class="alert alert-info text-center">
+        <div class="alert alert-info text-center shadow-sm">
             No shortlisted candidates yet.
         </div>
     {% endif %}
 
-    <div class="mt-3">
-        <a href="{{ url_for('company_dashboard') }}" class="btn btn-secondary">
+    <div class="mt-4">
+        <a href="{{ url_for('company_dashboard') }}" class="btn btn-secondary shadow-sm">
             Back to Dashboard
         </a>
     </div>

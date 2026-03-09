@@ -2,49 +2,59 @@
 {% block title %}Application History{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-5">
 
     <h2 class="mb-4 text-center">My Job Application History</h2>
 
     {% if applications %}
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover shadow-sm">
-            <thead class="table-dark">
-                <tr>
-                    <th>Job Title</th>
-                    <th>Company</th>
-                    <th>Applied On</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for app in applications %}
-                <tr>
-                    <td>{{ app[0] }}</td>
-                    <td>{{ app[1] }}</td>
-                    <td>{{ app[2] }}</td>
-                    <td>
-                        {% if app[3] == "Applied" %}
-                            <span class="badge bg-secondary">Applied</span>
-                        {% elif app[3] == "Shortlisted" %}
-                            <span class="badge bg-primary">Shortlisted</span>
-                        {% elif app[3] == "Interview" %}
-                            <span class="badge bg-info text-dark">Interview</span>
-                        {% elif app[3] == "Selected" %}
-                            <span class="badge bg-success">Selected</span>
-                        {% elif app[3] == "Rejected" %}
-                            <span class="badge bg-danger">Rejected</span>
-                        {% elif app[3] == "Placed" %}
-                            <span class="badge bg-dark">Placed</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+
+                    <thead>
+                        <tr>
+                            <th>Job Title</th>
+                            <th>Company</th>
+                            <th>Applied On</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td>{{ app[0] }}</td>
+                            <td>{{ app[1] }}</td>
+                            <td>{{ app[2] }}</td>
+                            <td>
+                                {% if app[3] == "Applied" %}
+                                    <span class="badge bg-secondary">Applied</span>
+                                {% elif app[3] == "Shortlisted" %}
+                                    <span class="badge bg-primary">Shortlisted</span>
+                                {% elif app[3] == "Interview" %}
+                                    <span class="badge bg-info text-dark">Interview</span>
+                                {% elif app[3] == "Selected" %}
+                                    <span class="badge bg-success">Selected</span>
+                                {% elif app[3] == "Rejected" %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% elif app[3] == "Placed" %}
+                                    <span class="badge bg-dark">Placed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
     </div>
+
     {% else %}
-        <div class="alert alert-info text-center">
+        <div class="alert alert-info text-center shadow-sm">
             You have not applied to any jobs yet.
         </div>
     {% endif %}

@@ -3,13 +3,13 @@
 {% block title %}View Applications{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-5">
 
     <h2 class="mb-4 text-center">Applications for Job ID {{ job_id }}</h2>
 
     {% with messages = get_flashed_messages() %}
         {% if messages %}
-            <div class="alert alert-info">
+            <div class="alert alert-info shadow-sm">
                 {% for message in messages %}
                     <div>{{ message }}</div>
                 {% endfor %}
@@ -18,97 +18,103 @@
     {% endwith %}
 
     {% if applications %}
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover shadow-sm">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Student Name</th>
-                        <th>CGPA</th>
-                        <th>Resume</th>
-                        <th>Status</th>
-                        <th>Applied On</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for app in applications %}
-                    <tr>
-                        <td>{{ app[0] }}</td>
-                        <td>{{ app[1] }}</td>
-                        <td>{{ app[2] }}</td>
+        <div class="card shadow-sm">
+            <div class="card-body">
 
-                        <!-- Resume -->
-                        <td>
-                            {% if app[3] %}
-                                <a href="{{ app[3] }}" target="_blank" class="btn btn-sm btn-primary">
-                                    View Resume
-                                </a>
-                            {% else %}
-                                <span class="text-muted">Not Uploaded</span>
-                            {% endif %}
-                        </td>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
 
-                        <!-- Status Badge -->
-                        <td>
-                            {% if app[4] == "Selected" %}
-                                <span class="badge bg-success">Selected</span>
-                            {% elif app[4] == "Rejected" %}
-                                <span class="badge bg-danger">Rejected</span>
-                            {% elif app[4] == "Shortlisted" %}
-                                <span class="badge bg-primary">Shortlisted</span>
-                            {% else %}
-                                <span class="badge bg-warning text-dark">Applied</span>
-                            {% endif %}
-                        </td>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Student Name</th>
+                                <th>CGPA</th>
+                                <th>Resume</th>
+                                <th>Status</th>
+                                <th>Applied On</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
 
-                        <td>{{ app[5] }}</td>
+                        <tbody>
+                            {% for app in applications %}
+                            <tr>
+                                <td>{{ app[0] }}</td>
+                                <td>{{ app[1] }}</td>
+                                <td>{{ app[2] }}</td>
 
-                        <!-- Action Buttons -->
-                        <td>
+                                <!-- Resume -->
+                                <td>
+                                    {% if app[3] %}
+                                        <a href="{{ app[3] }}" target="_blank" class="btn btn-primary btn-sm shadow-sm">
+                                            View Resume
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Not Uploaded</span>
+                                    {% endif %}
+                                </td>
 
-                            <!-- Shortlist -->
-                            <form action="{{ url_for('update_application_status', application_id=app[0], new_status='Shortlisted') }}"
-                                  method="POST" style="display:inline;">
-                                <button class="btn btn-sm btn-primary"
-                                        {% if app[4] == "Selected" or app[4] == "Rejected" %}disabled{% endif %}>
-                                    Shortlist
-                                </button>
-                            </form>
+                                <!-- Status Badge -->
+                                <td>
+                                    {% if app[4] == "Selected" %}
+                                        <span class="badge bg-success">Selected</span>
+                                    {% elif app[4] == "Rejected" %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% elif app[4] == "Shortlisted" %}
+                                        <span class="badge bg-primary">Shortlisted</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Applied</span>
+                                    {% endif %}
+                                </td>
 
-                            <!-- Select -->
-                            <form action="{{ url_for('update_application_status', application_id=app[0], new_status='Selected') }}"
-                                  method="POST" style="display:inline;">
-                                <button class="btn btn-sm btn-success"
-                                        {% if app[4] == "Selected" or app[4] == "Rejected" %}disabled{% endif %}>
-                                    Select
-                                </button>
-                            </form>
+                                <td>{{ app[5] }}</td>
 
-                            <!-- Reject -->
-                            <form action="{{ url_for('update_application_status', application_id=app[0], new_status='Rejected') }}"
-                                  method="POST" style="display:inline;">
-                                <button class="btn btn-sm btn-danger"
-                                        {% if app[4] == "Selected" or app[4] == "Rejected" %}disabled{% endif %}>
-                                    Reject
-                                </button>
-                            </form>
+                                <!-- Action Buttons -->
+                                <td>
 
-                        </td>
+                                    <form action="{{ url_for('update_application_status', application_id=app[0], new_status='Shortlisted') }}"
+                                          method="POST" style="display:inline;">
+                                        <button class="btn btn-primary btn-sm"
+                                                {% if app[4] == "Selected" or app[4] == "Rejected" %}disabled{% endif %}>
+                                            Shortlist
+                                        </button>
+                                    </form>
 
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                                    <form action="{{ url_for('update_application_status', application_id=app[0], new_status='Selected') }}"
+                                          method="POST" style="display:inline;">
+                                        <button class="btn btn-success btn-sm"
+                                                {% if app[4] == "Selected" or app[4] == "Rejected" %}disabled{% endif %}>
+                                            Select
+                                        </button>
+                                    </form>
+
+                                    <form action="{{ url_for('update_application_status', application_id=app[0], new_status='Rejected') }}"
+                                          method="POST" style="display:inline;">
+                                        <button class="btn btn-danger btn-sm"
+                                                {% if app[4] == "Selected" or app[4] == "Rejected" %}disabled{% endif %}>
+                                            Reject
+                                        </button>
+                                    </form>
+
+                                </td>
+
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
         </div>
     {% else %}
-        <div class="alert alert-success text-center">
+        <div class="alert alert-success text-center shadow-sm">
             No applications found for this job.
         </div>
     {% endif %}
 
-    <div class="mt-3">
-        <a href="{{ url_for('company_manage_jobs') }}" class="btn btn-secondary">
+    <div class="mt-4">
+        <a href="{{ url_for('company_manage_jobs') }}" class="btn btn-secondary shadow-sm">
             Back to My Jobs
         </a>
     </div>

@@ -1,8 +1,41 @@
-<form method="POST">
-    <label for="email">Email address</label>
-    <input type="email", name="email" placeholder="you@email.com",required>
-    <label for="password">Password</label>
-    <input type="password" name="password" placeholder="**********" required>
-    <button type="submit">Log In</button>
-    <p>Don't have an account? <a href="{{url_for('student_register')}}">Register here</a></p>
-</form>
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5 d-flex justify-content-center">
+
+    <div class="card shadow-sm p-4" style="max-width:420px; width:100%;">
+
+        <h3 class="text-center mb-4">Login</h3>
+
+        <form method="POST">
+
+            <div class="mb-3">
+                <label class="form-label">Email address</label>
+                <input type="email" name="email" class="form-control" placeholder="you@email.com" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="**********" required>
+            </div>
+
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-primary shadow-sm">
+                    Log In
+                </button>
+            </div>
+
+            <p class="text-center text-muted mb-0">
+                Don't have an account?
+                <a href="{{ url_for('student_register') }}">Register here</a>
+            </p>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

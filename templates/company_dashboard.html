@@ -4,15 +4,14 @@
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="container mt-5">
 
-```
-<h2 class="mb-4 text-center">Company Dashboard</h2>
+<h2 class="mb-5 text-center">Company Dashboard</h2>
 
 <!-- Flash Messages -->
 {% with messages = get_flashed_messages() %}
     {% if messages %}
-        <div class="alert alert-info">
+        <div class="alert alert-info shadow-sm">
             {% for message in messages %}
                 <div>{{ message }}</div>
             {% endfor %}
@@ -24,37 +23,37 @@
 <div class="row g-4 mb-4">
 
     <div class="col-md-3">
-        <div class="card text-center shadow-sm border-0 bg-primary text-white">
+        <div class="card dashboard-card text-center shadow-sm">
             <div class="card-body">
-                <h6>Total Jobs Posted</h6>
-                <h3>{{ total_jobs | default(0) }}</h3>
+                <h6 class="text-muted">Total Jobs Posted</h6>
+                <h2 class="text-primary">{{ total_jobs | default(0) }}</h2>
             </div>
         </div>
     </div>
 
     <div class="col-md-3">
-        <div class="card text-center shadow-sm border-0 bg-success text-white">
+        <div class="card dashboard-card text-center shadow-sm">
             <div class="card-body">
-                <h6>Active Jobs</h6>
-                <h3>{{ active_jobs | default(0) }}</h3>
+                <h6 class="text-muted">Active Jobs</h6>
+                <h2 class="text-success">{{ active_jobs | default(0) }}</h2>
             </div>
         </div>
     </div>
 
     <div class="col-md-3">
-        <div class="card text-center shadow-sm border-0 bg-danger text-white">
+        <div class="card dashboard-card text-center shadow-sm">
             <div class="card-body">
-                <h6>Closed Jobs</h6>
-                <h3>{{ closed_jobs | default(0) }}</h3>
+                <h6 class="text-muted">Closed Jobs</h6>
+                <h2 class="text-danger">{{ closed_jobs | default(0) }}</h2>
             </div>
         </div>
     </div>
 
     <div class="col-md-3">
-        <div class="card text-center shadow-sm border-0 bg-warning text-dark">
+        <div class="card dashboard-card text-center shadow-sm">
             <div class="card-body">
-                <h6>Total Applications</h6>
-                <h3>{{ total_applications | default(0) }}</h3>
+                <h6 class="text-muted">Total Applications</h6>
+                <h2 class="text-warning">{{ total_applications | default(0) }}</h2>
             </div>
         </div>
     </div>
@@ -65,19 +64,18 @@
 <div class="row g-3">
 
     <div class="col-md-6">
-        <a href="{{ url_for('post_job') }}" class="btn btn-primary w-100">
+        <a href="{{ url_for('post_job') }}" class="btn btn-primary w-100 shadow-sm">
             ➕ Post New Job
         </a>
     </div>
 
     <div class="col-md-6">
-        <a href="{{ url_for('company_manage_jobs') }}" class="btn btn-success w-100">
+        <a href="{{ url_for('company_manage_jobs') }}" class="btn btn-success w-100 shadow-sm">
             📋 Manage My Jobs
         </a>
     </div>
 
 </div>
-```
 
 </div>
 {% endblock %}

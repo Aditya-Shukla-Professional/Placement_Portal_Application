@@ -1,11 +1,87 @@
-body {
-    background-color: #f4f6f9;
+/* ===== GENERAL ===== */
+
+body{
+    background-color:#f5f7fb;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.card {
-    border-radius: 12px;
+h2,h4{
+    font-weight:600;
 }
 
-.list-group-item:hover {
-    background-color: #f0f0f0;
+/* ===== NAVBAR ===== */
+
+.navbar{
+    background: linear-gradient(90deg,#1e3c72,#2a5298);
+    padding:12px 0;
+}
+
+.navbar-brand{
+    font-size:20px;
+    font-weight:600;
+}
+
+.logout-btn{
+    border-radius:8px;
+    padding:6px 14px;
+}
+
+/* ===== FOOTER ===== */
+
+footer{
+    color:#777;
+    font-size:14px;
+}
+
+/* ===== DASHBOARD CARDS ===== */
+
+.dashboard-card{
+    border:none;
+    border-radius:12px;
+    transition:0.25s;
+}
+
+.dashboard-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 6px 20px rgba(0,0,0,0.1);
+}
+
+/* ===== ADMIN LINKS ===== */
+
+.admin-link{
+    padding:16px;
+    font-weight:500;
+}
+
+.admin-link:hover{
+    background:#f0f4ff;
+}
+
+/* ===== TABLES ===== */
+
+.table{
+    background:white;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.table thead{
+    background:#2a5298;
+    color:white;
+}
+
+.table tbody tr:hover{
+    background:#f1f4ff;
+}
+
+/* ===== ALERT ===== */
+
+.alert{
+    border-radius:8px;
+}
+
+/* ===== MAIN CONTENT HEIGHT ===== */
+
+.main-container{
+    min-height:85vh;
 }

@@ -1,14 +1,49 @@
-<h3>Create Account</h3>
-<form method="POST">
-    <label for="name">Company Name</label>
-    <input type="text" name="name" placeholder="Company Name" required>
-    <label for="email">Email Address</label>
-    <input type="email" name="email" placeholder="you@example.com" required>
-    <label for="password" >Password</label>
-    <input type="password" name="password" minlength="6", placeholder="Create a Password" required>
-    <label for="contact">HR Contact</label>
-    <input type="text" name="contact" placeholder="HR Contact" required>
-    <label for="text">Website</label>
-    <input type="text" name="website" placeholder="Website Link">
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+{% extends "base.html" %}
+{% block title %}Create Company Account{% endblock %}
+
+{% block content %}
+<div class="container mt-5 d-flex justify-content-center">
+
+    <div class="card shadow-sm p-4" style="max-width:500px; width:100%;">
+
+        <h3 class="text-center mb-4">Create Account</h3>
+
+        <form method="POST">
+
+            <div class="mb-3">
+                <label class="form-label">Company Name</label>
+                <input type="text" name="name" class="form-control" placeholder="Company Name" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" minlength="6" placeholder="Create a Password" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">HR Contact</label>
+                <input type="text" name="contact" class="form-control" placeholder="HR Contact" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Website</label>
+                <input type="text" name="website" class="form-control" placeholder="Website Link">
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary shadow-sm">
+                    Submit
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+{% endblock %}

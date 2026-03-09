@@ -3,14 +3,14 @@
 {% block title %}Pending Companies{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-5">
 
     <h2 class="mb-4 text-center">Pending Company Registrations</h2>
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages() %}
         {% if messages %}
-            <div class="alert alert-info">
+            <div class="alert alert-info shadow-sm">
                 {% for message in messages %}
                     <div>{{ message }}</div>
                 {% endfor %}
@@ -19,52 +19,64 @@
     {% endwith %}
 
     {% if companies %}
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover shadow-sm">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Company Name</th>
-                        <th>Email</th>
-                        <th>HR Contact</th>
-                        <th>Website</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for company in companies %}
-                    <tr>
-                        <td>{{ company[0] }}</td>
-                        <td>{{ company[1] }}</td>
-                        <td>{{ company[2] }}</td>
-                        <td>{{ company[4] }}</td>
-                        <td>{{ company[5] or "N/A" }}</td>
-                        <td>
-                            <form action="{{ url_for('approve_company', id=company[0]) }}" method="POST" style="display:inline;">
-                                <button type="submit" class="btn btn-success btn-sm">
-                                    Approve
-                                </button>
-                            </form>
-                            
-                            <form action="{{ url_for('reject_company', id=company[0]) }}" method="POST" style="display:inline;">
-                                <button type="submit" class="btn btn-danger btn-sm">
-                                    Reject
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Company Name</th>
+                                <th>Email</th>
+                                <th>HR Contact</th>
+                                <th>Website</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for company in companies %}
+                            <tr>
+                                <td>{{ company[0] }}</td>
+                                <td>{{ company[1] }}</td>
+                                <td>{{ company[2] }}</td>
+                                <td>{{ company[4] }}</td>
+                                <td>{{ company[5] or "N/A" }}</td>
+
+                                <td>
+
+                                    <form action="{{ url_for('approve_company', id=company[0]) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            Approve
+                                        </button>
+                                    </form>
+
+                                    <form action="{{ url_for('reject_company', id=company[0]) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            Reject
+                                        </button>
+                                    </form>
+
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
         </div>
     {% else %}
-        <div class="alert alert-success text-center">
+        <div class="alert alert-success text-center shadow-sm">
             No pending companies 🎉
         </div>
     {% endif %}
 
-    <div class="mt-3">
-        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+    <div class="mt-4">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary shadow-sm">
             Back to Dashboard
         </a>
     </div>

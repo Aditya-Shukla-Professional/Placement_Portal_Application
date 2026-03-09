@@ -3,12 +3,12 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-5">
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages() %}
         {% if messages %}
-            <div class="alert alert-info">
+            <div class="alert alert-info shadow-sm">
                 {% for message in messages %}
                     <div>{{ message }}</div>
                 {% endfor %}
@@ -16,43 +16,43 @@
         {% endif %}
     {% endwith %}
 
-    <h2 class="mb-4 text-center">Admin Dashboard</h2>
+    <h2 class="mb-5 text-center">Admin Dashboard</h2>
 
     <!-- Stats Cards -->
     <div class="row g-4">
 
         <div class="col-md-3">
-            <div class="card text-center shadow-sm bg-primary text-white">
+            <div class="card dashboard-card text-center shadow-sm">
                 <div class="card-body">
-                    <h6>Total Students</h6>
-                    <h3>{{ total_students | default(0) }}</h3>
+                    <h6 class="text-muted">Total Students</h6>
+                    <h2 class="text-primary">{{ total_students | default(0) }}</h2>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card text-center shadow-sm bg-success text-white">
+            <div class="card dashboard-card text-center shadow-sm">
                 <div class="card-body">
-                    <h6>Total Companies</h6>
-                    <h3>{{ total_companies | default(0) }}</h3>
+                    <h6 class="text-muted">Total Companies</h6>
+                    <h2 class="text-success">{{ total_companies | default(0) }}</h2>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card text-center shadow-sm bg-warning text-dark">
+            <div class="card dashboard-card text-center shadow-sm">
                 <div class="card-body">
-                    <h6>Total Jobs</h6>
-                    <h3>{{ total_jobs | default(0) }}</h3>
+                    <h6 class="text-muted">Total Jobs</h6>
+                    <h2 class="text-warning">{{ total_jobs | default(0) }}</h2>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card text-center shadow-sm bg-danger text-white">
+            <div class="card dashboard-card text-center shadow-sm">
                 <div class="card-body">
-                    <h6>Total Applications</h6>
-                    <h3>{{ total_applications | default(0) }}</h3>
+                    <h6 class="text-muted">Total Applications</h6>
+                    <h2 class="text-danger">{{ total_applications | default(0) }}</h2>
                 </div>
             </div>
         </div>
@@ -61,34 +61,39 @@
 
     <!-- Management Section -->
     <div class="mt-5">
-        <h4 class="mb-3">Admin Management</h4>
-        <div class="list-group shadow-sm">
 
-            <a href="{{ url_for('pending_companies') }}" class="list-group-item list-group-item-action">
-                Approve / Reject Companies
-            </a>
+        <h4 class="mb-4">Admin Management</h4>
 
-            <a href="{{ url_for('pending_jobs') }}" class="list-group-item list-group-item-action">
-                Approve / Reject Job Postings
-            </a>
+        <div class="card shadow-sm">
+            <div class="list-group list-group-flush">
 
-            <a href="{{ url_for('manage_students') }}" class="list-group-item list-group-item-action">
-                View & Manage Students
-            </a>
+                <a href="{{ url_for('pending_companies') }}" class="list-group-item list-group-item-action admin-link">
+                    Approve / Reject Companies
+                </a>
 
-            <a href="{{ url_for('manage_companies') }}" class="list-group-item list-group-item-action">
-                View & Manage Companies
-            </a>
+                <a href="{{ url_for('pending_jobs') }}" class="list-group-item list-group-item-action admin-link">
+                    Approve / Reject Job Postings
+                </a>
 
-            <a href="{{ url_for('manage_jobs') }}" class="list-group-item list-group-item-action">
-                View & Manage Jobs
-            </a>
+                <a href="{{ url_for('manage_students') }}" class="list-group-item list-group-item-action admin-link">
+                    View & Manage Students
+                </a>
 
-            <a href="{{ url_for('manage_applications') }}" class="list-group-item list-group-item-action">
-                View Applications
-            </a>
+                <a href="{{ url_for('manage_companies') }}" class="list-group-item list-group-item-action admin-link">
+                    View & Manage Companies
+                </a>
 
+                <a href="{{ url_for('manage_jobs') }}" class="list-group-item list-group-item-action admin-link">
+                    View & Manage Jobs
+                </a>
+
+                <a href="{{ url_for('manage_applications') }}" class="list-group-item list-group-item-action admin-link">
+                    View Applications
+                </a>
+
+            </div>
         </div>
+
     </div>
 
 </div>

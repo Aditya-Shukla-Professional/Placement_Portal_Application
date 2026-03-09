@@ -1,23 +1,66 @@
-<h3>Create Account</h3>
-<form method="POST">
-    <label for="name">Full Name</label>
-    <input type="text" name="name" placeholder="You Full Name" required>
-    <label for="email">Email Address</label>
-    <input type="email" name="email" placeholder="you@example.com" required>
-    <label for="password">Password</label>
-    <input type="password" name="password" minlength="6" placeholder="Create a Password" required>
-    <label for="age">Age</label>
-    <input type="number" name="age" min="1" max="120" placeholder="Your age" required>
-    <label for="gender">Gender</label>
-    <select type="text" name="gender" required>
-        <option value="" disabled selected>Select your gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
-    </select>
-    <label for="text">Branch</label>
-    <input type="text" name="branch" placeholder="Branch" required>
-    <label for="number">CGPA</label>
-    <input type="number" name="cgpa" placeholder="CGPA" step="0.01" min="0" max="10" required>
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+{% extends "base.html" %}
+{% block title %}Student Registration{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5 d-flex justify-content-center">
+
+    <div class="card shadow-sm p-4" style="max-width:500px; width:100%;">
+
+        <h3 class="text-center mb-4">Create Account</h3>
+
+        <form method="POST">
+
+            <div class="mb-3">
+                <label class="form-label">Full Name</label>
+                <input type="text" name="name" class="form-control" placeholder="Your Full Name" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" minlength="6" class="form-control" placeholder="Create a Password" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Age</label>
+                <input type="number" name="age" class="form-control" min="1" max="120" placeholder="Your age" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Gender</label>
+                <select name="gender" class="form-select" required>
+                    <option value="" disabled selected>Select your gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Branch</label>
+                <input type="text" name="branch" class="form-control" placeholder="Branch" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">CGPA</label>
+                <input type="number" name="cgpa" class="form-control" placeholder="CGPA" step="0.01" min="0" max="10" required>
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary shadow-sm">
+                    Submit
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
