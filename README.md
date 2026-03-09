@@ -1,8 +1,5 @@
 <!DOCTYPE html>
 <html>
-<head>
-<title>Placement Portal Application</title>
-</head>
 
 <body>
 
