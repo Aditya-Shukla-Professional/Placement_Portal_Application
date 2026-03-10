@@ -7,6 +7,18 @@
 
     <h2 class="mb-4 text-center">Available Jobs</h2>
 
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <!-- Search Bar -->
     <form method="GET" class="mb-4">
         <div class="input-group shadow-sm">
@@ -42,11 +54,18 @@
                             <strong>Deadline:</strong> {{ job[4] }}
                         </p>
 
-                        <form action="{{ url_for('apply_job', job_id=job[0]) }}" method="POST">
-                            <button class="btn btn-success btn-sm shadow-sm">
-                                Apply
+                        <!-- Apply Button Logic -->
+                        {% if job[0] in applied_jobs %}
+                            <button class="btn btn-secondary btn-sm shadow-sm" disabled>
+                                Applied
                             </button>
-                        </form>
+                        {% else %}
+                            <form action="{{ url_for('apply_job', job_id=job[0]) }}" method="POST">
+                                <button class="btn btn-success btn-sm shadow-sm">
+                                    Apply
+                                </button>
+                            </form>
+                        {% endif %}
 
                     </div>
                 </div>

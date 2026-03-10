@@ -340,12 +340,6 @@ Computer Science and Data Science Enthusiast
 <hr>
 
 <p align="center">
-⭐ If you found this project useful, consider giving it a star on GitHub.
-</p>
-
-<hr>
-
-<p align="center">
 Made with 💖 by Aditya Shukla
 </p>
 

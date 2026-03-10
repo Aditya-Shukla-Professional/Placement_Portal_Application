@@ -1,11 +1,9 @@
 import sqlite3
 import os
 from database import init_db
-from datetime import date
 from flask import Flask,render_template,request,redirect,url_for,flash
 from flask_login import LoginManager, login_user, login_required,logout_user,UserMixin,current_user
 from database import get_user_by_email, create_company, create_student
-from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
 
@@ -29,37 +27,67 @@ class User(UserMixin):
 def home():
     return render_template("home.html")
 
-@app.route("/login", methods=["GET","POST"]) # Used to login by students and companies
+@app.route("/login", methods=["GET","POST"])  # Used to login by students and companies
 def login():
     if current_user.is_authenticated:
         return redirect(url_for(f"{current_user.role}_dashboard"))
-    if request.method=="POST":
-        email=request.form.get("email")
-        password=request.form.get("password")
 
-        user_obj=get_user_by_email(email,password)
-        print("LOGIN DEBUG:", user_obj)   # Temporary
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
 
+        user_obj = get_user_by_email(email, password)
+        print("LOGIN DEBUG:", user_obj)
+
+        # Error returned from helper
         if user_obj and "error" in user_obj:
             flash(user_obj["error"])
             return render_template("login.html")
+
+        # Invalid login
         if not user_obj:
             flash("Invalid email or password")
             return render_template("login.html")
-        
+
+        # 🚨 COMPANY APPROVAL + BLACKLIST CHECK
+        if user_obj["role"] == "company":
+            con = sqlite3.connect("placement.db")
+            cur = con.cursor()
+
+            cur.execute("""
+                SELECT approval_status, is_blacklisted
+                FROM companies
+                WHERE id=?
+            """, (user_obj["id"],))
+
+            company = cur.fetchone()
+            con.close()
+
+            if company:
+                approval_status, is_blacklisted = company
+
+                if is_blacklisted == 1:
+                    flash("Your company account has been blacklisted by the admin.")
+                    return render_template("login.html")
+
+                if approval_status != "Approved":
+                    flash("Your company account is pending admin approval.")
+                    return render_template("login.html")
+
         # Create User object
         user = User(user_obj["id"], user_obj["role"])
-        
+
         # Log user into session
         login_user(user)
-        
-        if user.role=="admin":
+
+        # Redirect based on role
+        if user.role == "admin":
             return redirect(url_for("admin_dashboard"))
-        elif user.role=="student":
+        elif user.role == "student":
             return redirect(url_for("student_dashboard"))
-        elif user.role=="company":
+        elif user.role == "company":
             return redirect(url_for("company_dashboard"))
-        
+
     return render_template("login.html")
 
 @app.route("/register")
@@ -416,12 +444,21 @@ def student_profile():
         resume_path=None
 
         if resume and resume.filename!="":
-            filename=secure_filename(resume.filename)
-            upload_folder=os.path.join("static","uploads")
-            os.makedirs(upload_folder,exist_ok=True)
-            file_path=os.path.join(upload_folder,filename)
+            filename = f"{current_user.actual_id}_{secure_filename(resume.filename)}"
+
+            if not filename.lower().endswith(".pdf"):
+                flash("Only PDF resumes are allowed.")
+                con.close()
+                return redirect(url_for("student_profile"))
+            
+            upload_folder = os.path.join("static", "uploads")
+            os.makedirs(upload_folder, exist_ok=True)
+
+            file_path = os.path.join(upload_folder, filename)
             resume.save(file_path)
-            resume_path=file_path
+
+            # Save relative path for Flask static serving
+            resume_path = f"uploads/{filename}"
         
         if resume_path:
             cur.execute("UPDATE students SET branch=?, cgpa=?, skills=?, resume_path=? WHERE id=?",(branch,cgpa,skills,resume_path,current_user.actual_id))
@@ -484,9 +521,24 @@ def student_jobs():
         """)
 
     jobs = cur.fetchall()
+
+    # 🔹 Get jobs already applied by this student
+    cur.execute("""
+        SELECT job_id
+        FROM applications
+        WHERE student_id = ?
+    """, (current_user.actual_id,))
+
+    applied_jobs = [row[0] for row in cur.fetchall()]
+
     con.close()
 
-    return render_template("student_jobs.html", jobs=jobs)
+    return render_template(
+        "student_jobs.html",
+        jobs=jobs,
+        applied_jobs=applied_jobs
+    )
+
 
 @app.route("/student/apply/<int:job_id>", methods=["POST"])
 @login_required
@@ -679,7 +731,7 @@ def post_job():
                     description,eligibility_criteria,deadline,status,
                     created_at) VALUES(?,?,?,?,?,'Pending',CURRENT_TIMESTAMP)"""
                     ,(current_user.actual_id,title,description,
-                      f"Skills:{skills} | Experience:{experience} | Salary:{salary}",
+                      f"Skills: {skills} | Experience: {experience} years | Salary: {salary} LPA",
                       deadline))
         con.commit()
         con.close()

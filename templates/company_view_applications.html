@@ -46,7 +46,9 @@
                                 <!-- Resume -->
                                 <td>
                                     {% if app[3] %}
-                                        <a href="{{ app[3] }}" target="_blank" class="btn btn-primary btn-sm shadow-sm">
+                                        <a href="{{ url_for('static', filename=app[3]) }}"
+                                           target="_blank"
+                                           class="btn btn-primary btn-sm shadow-sm">
                                             View Resume
                                         </a>
                                     {% else %}
