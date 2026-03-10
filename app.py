@@ -49,7 +49,7 @@ def login():
             flash("Invalid email or password")
             return render_template("login.html")
 
-        # 🚨 COMPANY APPROVAL + BLACKLIST CHECK
+        # COMPANY APPROVAL + BLACKLIST CHECK
         if user_obj["role"] == "company":
             con = sqlite3.connect("placement.db")
             cur = con.cursor()
@@ -90,7 +90,7 @@ def login():
 
     return render_template("login.html")
 
-@app.route("/register")
+@app.route("/register") # Register Page
 def register():
     return render_template("register.html")
 
@@ -138,7 +138,7 @@ def company_register():
     
     return render_template("company_register.html")
 
-@app.route("/admin_dashboard")
+@app.route("/admin_dashboard") # Admin Dashboard
 @login_required
 def admin_dashboard():
     if current_user.role!="admin":
@@ -157,7 +157,7 @@ def admin_dashboard():
     con.close()
     return render_template("admin_dashboard.html",total_students=total_students,total_companies=total_companies,total_jobs=total_jobs,total_applications=total_applications)
 
-@app.route("/admin/pending_companies")
+@app.route("/admin/pending_companies") # Pending Companies approval by admin
 @login_required
 def pending_companies():
     if current_user.role!="admin":
@@ -170,7 +170,7 @@ def pending_companies():
     con.close()
     return render_template("pending_companies.html",companies=companies)
 
-@app.route("/admin/approve_company/<int:id>", methods=["POST"])
+@app.route("/admin/approve_company/<int:id>", methods=["POST"]) # Approval Page
 @login_required
 def approve_company(id):
     if current_user.role != "admin":
@@ -186,7 +186,7 @@ def approve_company(id):
     flash("Company approved successfully!")
     return redirect(url_for("pending_companies"))
 
-@app.route("/admin/reject_company/<int:id>", methods=["POST"])
+@app.route("/admin/reject_company/<int:id>", methods=["POST"]) # Rejection Page
 @login_required
 def reject_company(id):
     if current_user.role != "admin":
@@ -202,7 +202,7 @@ def reject_company(id):
     flash("Company rejected successfully!")
     return redirect(url_for("pending_companies"))
 
-@app.route("/admin/pending_jobs")
+@app.route("/admin/pending_jobs") # Pending jobs approval page of admin
 @login_required
 def pending_jobs():
     if current_user.role!="admin":
@@ -215,7 +215,7 @@ def pending_jobs():
     con.close()
     return render_template("pending_jobs.html",jobs=jobs)
 
-@app.route("/admin/approve_job/<int:id>", methods=["POST"])
+@app.route("/admin/approve_job/<int:id>", methods=["POST"]) # Jobs approval page
 @login_required
 def approve_job(id):
     if current_user.role != "admin":
@@ -231,7 +231,7 @@ def approve_job(id):
     flash("Job approved successfully!")
     return redirect(url_for("pending_jobs"))
 
-@app.route("/admin/reject_job/<int:id>", methods=["POST"])
+@app.route("/admin/reject_job/<int:id>", methods=["POST"]) # Jobs rejection page
 @login_required
 def reject_job(id):
     if current_user.role != "admin":
@@ -247,7 +247,7 @@ def reject_job(id):
     flash("Job closed successfully!")
     return redirect(url_for("pending_jobs"))
 
-@app.route("/admin/manage_students")
+@app.route("/admin/manage_students") # Student Manage Page
 @login_required
 def manage_students():
     if current_user.role != "admin":
@@ -266,7 +266,7 @@ def manage_students():
     con.close()
     return render_template("manage_students.html", students=students)
 
-@app.route("/admin/deactivate_student/<int:id>", methods=["POST"])
+@app.route("/admin/deactivate_student/<int:id>", methods=["POST"]) # Admin Deactivate Student Page
 @login_required
 def deactivate_student(id):
     if current_user.role != "admin":
@@ -280,7 +280,7 @@ def deactivate_student(id):
     flash("Student deactivated successfully!")
     return redirect(url_for("manage_students"))
 
-@app.route("/admin/manage_companies")
+@app.route("/admin/manage_companies") # Admin company manage page
 @login_required
 def manage_companies():
     if current_user.role != "admin":
@@ -303,7 +303,7 @@ def manage_companies():
     con.close()
     return render_template("manage_companies.html",companies=companies)
 
-@app.route("/admin/blacklist_company/<int:id>", methods=["POST"])
+@app.route("/admin/blacklist_company/<int:id>", methods=["POST"]) # Admin blacklist company page
 @login_required
 def blacklist_company(id):
     if current_user.role != "admin":
@@ -317,7 +317,7 @@ def blacklist_company(id):
     flash("Company blacklisted successfully!")
     return redirect(url_for("manage_companies"))
 
-@app.route("/admin/manage_jobs")
+@app.route("/admin/manage_jobs") # Admin manage jobs page
 @login_required
 def manage_jobs():
     if current_user.role != "admin":
@@ -330,7 +330,7 @@ def manage_jobs():
     con.close()
     return render_template("manage_jobs.html",jobs=jobs)
 
-@app.route("/admin/manage_applications")
+@app.route("/admin/manage_applications") # Admin manage applications Page
 @login_required
 def manage_applications():
     if current_user.role != "admin":
@@ -350,7 +350,7 @@ def manage_applications():
     con.close()
     return render_template("manage_applications.html",applications=applications)
 
-@app.route("/admin/placement_tracking")
+@app.route("/admin/placement_tracking") # Admin placement tracking page
 @login_required
 def placement_tracking():
     if current_user.role != "admin":
@@ -378,7 +378,7 @@ def placement_tracking():
 
     return render_template("admin_application_tracking.html", applications=applications)
 
-@app.route("/student_dashboard")
+@app.route("/student_dashboard") # Student Dashboard Page
 @login_required
 def student_dashboard():
     if current_user.role != "student":
@@ -414,7 +414,7 @@ def student_dashboard():
     """, (current_user.actual_id,))
     rejected = cur.fetchone()[0]
 
-    # 🔔 Notifications (status changed)
+    # Notifications (status changed)
     cur.execute("""
         SELECT jobs.title,
                companies.company_name,
@@ -441,7 +441,7 @@ def student_dashboard():
     )
 
 
-@app.route("/student/profile", methods=["GET","POST"])
+@app.route("/student/profile", methods=["GET","POST"]) # Student Profile Page
 @login_required
 def student_profile():
     if current_user.role!="student":
@@ -487,7 +487,7 @@ def student_profile():
     con.close()
     return render_template("student_profile.html",student=student)
 
-@app.route("/student/jobs")
+@app.route("/student/jobs") # Student Jobs Page
 @login_required
 def student_jobs():
     if current_user.role != "student":
@@ -535,7 +535,7 @@ def student_jobs():
 
     jobs = cur.fetchall()
 
-    # 🔹 Get jobs already applied by this student
+    # Get jobs already applied by this student
     cur.execute("""
         SELECT job_id
         FROM applications
@@ -553,7 +553,7 @@ def student_jobs():
     )
 
 
-@app.route("/student/apply/<int:job_id>", methods=["POST"])
+@app.route("/student/apply/<int:job_id>", methods=["POST"]) # Student apply jobs by id page
 @login_required
 def apply_job(job_id):
     if current_user.role != "student":
@@ -563,7 +563,7 @@ def apply_job(job_id):
     con = sqlite3.connect("placement.db")
     cur = con.cursor()
 
-    # 1️⃣ Check student is active
+    # Check student is active
     cur.execute("SELECT is_active FROM students WHERE id=?", (current_user.actual_id,))
     student = cur.fetchone()
 
@@ -572,7 +572,7 @@ def apply_job(job_id):
         flash("Your account is not active.")
         return redirect(url_for("student_jobs"))
 
-    # 2️⃣ Check job status and deadline
+    # Check job status and deadline
     cur.execute("""
         SELECT status, deadline
         FROM jobs
@@ -593,7 +593,7 @@ def apply_job(job_id):
         flash("This job is not available.")
         return redirect(url_for("student_jobs"))
 
-    # 3️⃣ Deadline check
+    # Deadline check
     try:
         deadline_date = datetime.strptime(job_deadline, "%Y-%m-%d")
         if deadline_date < datetime.now():
@@ -606,7 +606,7 @@ def apply_job(job_id):
         flash("Invalid job deadline.")
         return redirect(url_for("student_jobs"))
 
-    # 4️⃣ Check duplicate application
+    # Check duplicate application
     cur.execute("""
         SELECT id
         FROM applications
@@ -620,7 +620,7 @@ def apply_job(job_id):
         flash("You have already applied for this job.")
         return redirect(url_for("student_jobs"))
 
-    # 5️⃣ Insert application
+    # Insert application
     cur.execute("""
         INSERT INTO applications (student_id, job_id, status, applied_on)
         VALUES (?, ?, 'Applied', CURRENT_TIMESTAMP)
@@ -632,7 +632,7 @@ def apply_job(job_id):
     flash("Application submitted successfully!")
     return redirect(url_for("student_jobs"))
 
-@app.route("/student/my_applications")
+@app.route("/student/my_applications") # Student Application Page
 @login_required
 def my_applications():
     if current_user.role != "student":
@@ -659,7 +659,7 @@ def my_applications():
 
     return render_template("student_my_applications.html", applications=applications)
 
-@app.route("/student/application_history")
+@app.route("/student/application_history") # Student Application History Page
 @login_required
 def student_application_history():
     if current_user.role != "student":
@@ -686,7 +686,7 @@ def student_application_history():
 
     return render_template("student_application_history.html", applications=applications)
 
-@app.route("/company_dashboard")
+@app.route("/company_dashboard") # Company Dashboard Page
 @login_required
 def company_dashboard():
     if current_user.role!="company":
@@ -715,7 +715,7 @@ def company_dashboard():
     con.close()
     return render_template("company_dashboard.html",total_jobs=total_jobs,active_jobs=active_jobs,closed_jobs=closed_jobs,total_applications=total_applications)
 
-@app.route("/company/post_job",methods=["GET","POST"])
+@app.route("/company/post_job",methods=["GET","POST"]) # Company Post Job Page
 @login_required
 def post_job():
     if current_user.role!="company":
@@ -752,7 +752,7 @@ def post_job():
         return redirect(url_for("company_dashboard"))
     return render_template("post_job.html")
 
-@app.route("/company/manage_jobs")
+@app.route("/company/manage_jobs") # Company Manage Jobs Page
 @login_required
 def company_manage_jobs():
     if current_user.role!="company":
@@ -765,7 +765,7 @@ def company_manage_jobs():
     con.close()
     return render_template("company_manage_jobs.html",jobs=jobs)
 
-@app.route("/company/close_job/<int:job_id>",methods=["POST"])
+@app.route("/company/close_job/<int:job_id>",methods=["POST"]) # Company Close Jobs Page
 @login_required
 def close_job(job_id):
     if current_user.role!="company":
@@ -779,7 +779,7 @@ def close_job(job_id):
     flash("Job closed successfully!")
     return redirect(url_for("company_manage_jobs"))
 
-@app.route("/company/view_applications/<int:job_id>")
+@app.route("/company/view_applications/<int:job_id>") # Company View applications page
 @login_required
 def view_applications(job_id):
     if current_user.role!="company":
@@ -807,7 +807,7 @@ def view_applications(job_id):
 
     return render_template("company_view_applications.html",applications=applications,job_id=job_id)
 
-@app.route("/company/update_application_status/<int:application_id>/<string:new_status>", methods=["POST"])
+@app.route("/company/update_application_status/<int:application_id>/<string:new_status>", methods=["POST"]) # Company application status update
 @login_required
 def update_application_status(application_id, new_status):
     if current_user.role != "company":
@@ -854,7 +854,7 @@ def update_application_status(application_id, new_status):
     flash(f"Application marked as {new_status}.")
     return redirect(request.referrer)
 
-@app.route("/company/shortlisted_candidates")
+@app.route("/company/shortlisted_candidates") # Company shortlisted candidates page
 @login_required
 def shortlisted_candidates():
     if current_user.role != "company":
@@ -886,7 +886,7 @@ def shortlisted_candidates():
         candidates=candidates
     )
 
-@app.route("/company/application_history")
+@app.route("/company/application_history") # Company application history page
 @login_required
 def company_application_history():
     if current_user.role != "company":
@@ -913,14 +913,14 @@ def company_application_history():
 
     return render_template("company_application_overview.html", applications=applications)
 
-@app.route("/logout")
+@app.route("/logout") # Company logout page
 @login_required
 def logout():
     logout_user()
     return redirect(url_for("login"))
 
 
-@login_manager.user_loader
+@login_manager.user_loader # Company user loader page
 def load_user(user_id):
     try:
         # Split 'student-1' into ['student', '1']
