@@ -919,6 +919,7 @@ def logout():
     logout_user()
     return redirect(url_for("login"))
 
+
 @login_manager.user_loader
 def load_user(user_id):
     try:
