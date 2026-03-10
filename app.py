@@ -5,6 +5,7 @@ from flask import Flask,render_template,request,redirect,url_for,flash
 from flask_login import LoginManager, login_user, login_required,logout_user,UserMixin,current_user
 from database import get_user_by_email, create_company, create_student
 from werkzeug.utils import secure_filename
+from werkzeug.security import check_password_hash
 from datetime import datetime
 
 app=Flask(__name__)
