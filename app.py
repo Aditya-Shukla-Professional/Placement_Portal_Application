@@ -10,7 +10,7 @@ from datetime import datetime
 app=Flask(__name__)
 
 app.secret_key = "dsjcn34y7r3fbf9218wdneuf#^%#&@()" # Secret key
- 
+
 
 # Login Manager
 login_manager= LoginManager()
@@ -105,10 +105,16 @@ def student_register():
         branch=request.form.get("branch")
         cgpa=request.form.get("cgpa")
 
-        create_student(name,email,age,gender,password,branch,cgpa)
+        result = create_student(name,email,age,gender,password,branch,cgpa)
+
+        if not result:
+            print("flash works")
+            flash("Email already registered. Please login instead.")
+            return render_template("student_register.html")
+        
         flash("Registration successful! You can now login.")
         return redirect(url_for("login"))
-    
+            
     return render_template("student_register.html")
 
 @app.route("/company_register", methods=["GET","POST"]) # Used to register a new company
@@ -120,9 +126,16 @@ def company_register():
         contact=request.form.get("contact")
         website=request.form.get("website")
 
-        create_company(company_name,email,password,contact,website)
+        result = create_company(company_name,email,password,contact,website)
+
+        if not result:
+            print("flash works")
+            flash("Company with this email already exists.")
+            return render_template("company_register.html")
+
         flash("Registration successful! You can now login.")
         return redirect(url_for("login"))
+    
     return render_template("company_register.html")
 
 @app.route("/admin_dashboard")

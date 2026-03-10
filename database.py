@@ -176,18 +176,38 @@ def get_user_by_email(email,password):
     
 # Creating Student
 def create_student(name,email,age,gender,password,branch,cgpa):
-    con=sqlite3.connect("placement.db")
-    cursor=con.cursor()
-    cursor.execute("INSERT INTO students(name,email,age,gender,hashed_password,branch,cgpa) VALUES(?,?,?,?,?,?,?)",
-                   (name,email,age,gender,generate_password_hash(password),branch,cgpa))
-    con.commit()
-    con.close()
+    try:
+        con = sqlite3.connect("placement.db")
+        cursor = con.cursor()
+
+        cursor.execute("""
+        INSERT INTO students(name,email,age,gender,hashed_password,branch,cgpa)
+        VALUES(?,?,?,?,?,?,?)
+        """,(name,email,age,gender,generate_password_hash(password),branch,cgpa))
+
+        con.commit()
+        con.close()
+
+        return True
+
+    except sqlite3.IntegrityError:
+        return False
 
 # Creating Company
 def create_company(company_name,email,password,contact,website):
-    con=sqlite3.connect("placement.db")
-    cursor=con.cursor()
-    cursor.execute("INSERT INTO companies(company_name,email,hashed_password,hr_contact,website) VALUES(?,?,?,?,?)",
-                   (company_name,email,generate_password_hash(password),contact,website))
-    con.commit()
-    con.close()
+    try:
+        con = sqlite3.connect("placement.db")
+        cursor = con.cursor()
+
+        cursor.execute("""
+        INSERT INTO companies(company_name,email,hashed_password,hr_contact,website)
+        VALUES(?,?,?,?,?)
+        """,(company_name,email,generate_password_hash(password),contact,website))
+
+        con.commit()
+        con.close()
+
+        return True
+
+    except sqlite3.IntegrityError:
+        return False
