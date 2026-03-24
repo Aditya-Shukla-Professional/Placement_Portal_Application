@@ -75,7 +75,7 @@ applicationTable="""
         student_id INTEGER NOT NULL,
         job_id INTEGER NOT NULL,
         applied_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        status TEXT CHECK(status in ('Applied','Shortlisted','Selected','Rejected')) DEFAULT 'Applied' NOT NULL,
+        status TEXT CHECK(status in ('Applied','Interview','Shortlisted','Selected','Rejected','Placed')) DEFAULT 'Applied' NOT NULL,
         UNIQUE(student_id, job_id),
         FOREIGN KEY (student_id) REFERENCES students(id)
         ON DELETE CASCADE 

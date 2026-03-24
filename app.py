@@ -10,7 +10,7 @@ from datetime import datetime
 
 app=Flask(__name__)
 
-app.secret_key = "dsjcn34y7r3fbf9218wdneuf#^%#&@()" # Secret key
+app.secret_key = "dsjcn34y7r3fbf9218wdneuf#^%#&@()" # Secret key (pip install python-dotenv ; from dotenv import load_dotenv ; load_dotenv() ; app.secret_key = os.getenv("SECRET_KEY"))
 
 
 # Login Manager
