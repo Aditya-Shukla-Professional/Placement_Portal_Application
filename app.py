@@ -63,6 +63,7 @@ def preprocess(text):
 
 
 def calculate_match_semantic(resume, job):
+    return 67 # Temporary
     try:
         resume = preprocess(resume)
         job = preprocess(job)
