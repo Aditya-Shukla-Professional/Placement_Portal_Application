@@ -7,11 +7,91 @@ from database import get_user_by_email, create_company, create_student
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
 from datetime import datetime
+from PyPDF2 import PdfReader
+from sentence_transformers import SentenceTransformer, util
+import re
 
-app=Flask(__name__)
+model = None
+
+def get_model():
+    global model
+    if model is None:
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+    return model
+
+
+def get_missing_skills(resume_text, job_text):
+    resume_words = set(preprocess(resume_text).split())
+    job_words = set(preprocess(job_text).split())
+
+    stopwords = {
+        "and","or","the","a","an","with","for","to","of",
+        "in","on","at","by","is","are","this","that"
+    }
+
+    job_words = job_words - stopwords
+    resume_words = resume_words - stopwords
+
+    missing = job_words - resume_words
+
+    return list(missing)[:10] # limit suggestion
+
+def preprocess(text):
+    text = text.lower()
+
+    text = re.sub(r'[^a-zA-Z0-9\s]', ' ', text)
+
+    synonyms = {
+        "backend": "server",
+        "frontend": "ui",
+        "developer": "engineer",
+        "ml": "machine learning",
+        "ai": "artificial intelligence",
+        "db": "database",
+        "js": "javascript",
+        "reactjs": "react",
+        "nodejs": "node",
+        "sql": "database",
+        "api": "backend",
+        "rest": "backend"
+    }
+
+    for key, value in synonyms.items():
+        text = text.replace(key, value)
+
+    return text
+
+
+def calculate_match_semantic(resume, job):
+    try:
+        resume = preprocess(resume)
+        job = preprocess(job)
+
+        embeddings = get_model.encode([resume, job])
+
+        similarity = util.cos_sim(embeddings[0], embeddings[1]).item() # Cosine Similarity
+
+        return round(similarity * 100, 2)
+
+    except:
+        return 0
+
+def extract_text_from_pdf(file_path):
+    try:
+        reader = PdfReader(file_path)
+        text = ""
+
+        for page in reader.pages:
+            text += page.extract_text() or ""
+
+        return text.lower()
+
+    except:
+        return ""
+    
+app=Flask(__name__) 
 
 app.secret_key = "dsjcn34y7r3fbf9218wdneuf#^%#&@()" # Secret key (pip install python-dotenv ; from dotenv import load_dotenv ; load_dotenv() ; app.secret_key = os.getenv("SECRET_KEY"))
-
 
 # Login Manager
 login_manager= LoginManager()
@@ -134,7 +214,7 @@ def company_register():
             flash("Company with this email already exists.")
             return render_template("company_register.html")
 
-        flash("Registration successful! You can now login.")
+        flash("Registration successful! You need admin approval to login.")
         return redirect(url_for("login"))
     
     return render_template("company_register.html")
@@ -687,6 +767,53 @@ def student_application_history():
 
     return render_template("student_application_history.html", applications=applications)
 
+@app.route("/match_score/<int:job_id>", methods=["POST"])
+@login_required
+def match_score(job_id):
+    con = sqlite3.connect("placement.db")
+    cur = con.cursor()
+
+    # 🔹 Get resume path
+    cur.execute("SELECT resume_path FROM students WHERE id=?", (current_user.actual_id,))
+    student = cur.fetchone()
+
+    if not student or not student[0]:
+        con.close()
+        flash("Please upload your resume first.")
+        return redirect(url_for("student_profile"))
+
+    resume_path = os.path.join("static", student[0])
+
+    # 🔹 Extract resume text
+    resume_text = extract_text_from_pdf(resume_path)
+
+    if not resume_text.strip():
+        con.close()
+        flash("Could not read your resume. Please upload a valid PDF.")
+        return redirect(url_for("student_profile"))
+
+    # 🔹 Get job data
+    cur.execute("SELECT description, eligibility_criteria FROM jobs WHERE id=?", (job_id,))
+    job = cur.fetchone()
+
+    job_text = ""
+    if job:
+        job_text = f"{job[0]} {job[1]}".lower()
+
+    con.close()
+
+    # 🔹 Calculate match
+    score = calculate_match_semantic(resume_text, job_text)
+
+    missing_skills = get_missing_skills(resume_text, job_text)
+    
+    # Convert list to string
+    missing_text = ", ".join(missing_skills) if missing_skills else "None"
+    
+    flash(f"Match: {score}% | Improve by adding: {missing_text}")
+
+    return redirect(url_for("student_jobs"))
+
 @app.route("/company_dashboard") # Company Dashboard Page
 @login_required
 def company_dashboard():
@@ -932,4 +1059,4 @@ def load_user(user_id):
 
 if __name__=="__main__":
     init_db()
-    app.run(port=5000,debug=True)
+    app.run()

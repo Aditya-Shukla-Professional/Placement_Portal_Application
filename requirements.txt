@@ -1,0 +1,7 @@
+flask
+flask-login
+werkzeug
+PyPDF2
+sentence-transformers
+torch
+gunicorn

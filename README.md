@@ -3,6 +3,69 @@
 
 <body>
 
+<!-- 🔥 NEW SECTION ADDED (TOP PRIORITY) -->
+<h2>🚀 Quick Start Guide (Run Locally)</h2>
+
+<p>Follow these steps to set up and run the project on your system.</p>
+
+<h3>1️⃣ Prerequisites</h3>
+<ul>
+<li>Python (3.8 or higher)</li>
+<li>pip (Python package manager)</li>
+<li>Git</li>
+</ul>
+
+<h3>2️⃣ Clone the Repository</h3>
+<pre>
+git clone https://github.com/AdityaShukla999/Placement_Portal_Application.git
+cd Placement_Portal_Application
+</pre>
+
+<h3>3️⃣ Create Virtual Environment (Recommended)</h3>
+<pre>
+python -m venv venv
+</pre>
+
+<p><b>Activate it:</b></p>
+
+<p>Windows:</p>
+<pre>
+venv\Scripts\activate
+</pre>
+
+<p>Mac/Linux:</p>
+<pre>
+source venv/bin/activate
+</pre>
+
+<h3>4️⃣ Install Required Modules</h3>
+<pre>
+pip install flask flask-login PyPDF2 sentence-transformers torch
+</pre>
+
+<h3>5️⃣ Run the Application</h3>
+<pre>
+python app.py
+</pre>
+
+<h3>6️⃣ Open in Browser</h3>
+<pre>
+http://127.0.0.1:5000
+</pre>
+
+<hr>
+
+<h2>⚠️ Important Notes</h2>
+
+<ul>
+<li>Make sure the <b>placement.db</b> file is present in the root directory</li>
+<li>The AI-based resume matching feature requires <b>sentence-transformers</b> (model downloads on first run)</li>
+<li>Resume upload must be in <b>PDF format only</b></li>
+<li>Uploaded resumes are stored in: <b>static/uploads/</b></li>
+</ul>
+
+<hr>
+
 <h1 align="center">🎓 Placement Portal Application</h1>
 
 <p align="center">
@@ -298,8 +361,7 @@ cd Placement_Portal_Application
 <h3>3. Install Dependencies</h3>
 
 <pre>
-pip install flask
-pip install flask-login
+pip install flask flask-login PyPDF2 sentence-transformers torch
 </pre>
 
 <h3>4. Run the Application</h3>
