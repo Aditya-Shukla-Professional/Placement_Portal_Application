@@ -69,6 +69,13 @@ http://127.0.0.1:5000
 <h1 align="center">🎓 Placement Portal Application</h1>
 
 <p align="center">
+🌐 <b>Live Demo:</b> 
+<a href="https://placement-portal-application-je3w.onrender.com" target="_blank">
+https://placement-portal-application-je3w.onrender.com
+</a>
+</p>
+
+<p align="center">
 A full-stack web application designed to streamline the campus placement process.
 </p>
 
