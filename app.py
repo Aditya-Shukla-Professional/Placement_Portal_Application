@@ -8,16 +8,16 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
 from datetime import datetime
 from PyPDF2 import PdfReader
-from sentence_transformers import SentenceTransformer, util
+# from sentence_transformers import SentenceTransformer, util
 import re
 
-model = None
+# model = None
 
-def get_model():
-    global model
-    if model is None:
-        model = SentenceTransformer('all-MiniLM-L6-v2')
-    return model
+# def get_model():
+#     global model
+#     if model is None:
+#         model = SentenceTransformer('all-MiniLM-L6-v2')
+#     return model
 
 
 def get_missing_skills(resume_text, job_text):
@@ -64,18 +64,18 @@ def preprocess(text):
 
 def calculate_match_semantic(resume, job):
     return 67 # Temporary
-    try:
-        resume = preprocess(resume)
-        job = preprocess(job)
+    # try:
+    #     resume = preprocess(resume)
+    #     job = preprocess(job)
 
-        embeddings = get_model.encode([resume, job])
+    #     embeddings = get_model.encode([resume, job])
 
-        similarity = util.cos_sim(embeddings[0], embeddings[1]).item() # Cosine Similarity
+    #     similarity = util.cos_sim(embeddings[0], embeddings[1]).item() # Cosine Similarity
 
-        return round(similarity * 100, 2)
+    #     return round(similarity * 100, 2)
 
-    except:
-        return 0
+    # except:
+    #     return 0
 
 def extract_text_from_pdf(file_path):
     try:
